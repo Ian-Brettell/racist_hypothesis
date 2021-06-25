@@ -9,13 +9,13 @@ RUN install2.r --error \
     here \
     pegas \
     knitr \
-    BiocManager \
+#    BiocManager \
     ggridges \
     cowplot \
     remotes
     
 # Install `karyoploteR` (bioconductor)
-RUN R -e "BiocManager::install('karyoploteR')"
+#RUN R -e "BiocManager::install('karyoploteR')"
 
 # Install `gwasrapidd`
 RUN R -e "remotes::install_github('ramiromagno/gwasrapidd')"
