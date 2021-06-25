@@ -1,4 +1,4 @@
-FROM rocker/tidyverse:4.1.0
+FROM rocker/tidyverse:4.0.0
 
 # Install packages required for `sf`, which in turn is required for `pegas`
 RUN apt update
