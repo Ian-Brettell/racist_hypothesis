@@ -1,15 +1,21 @@
-FROM rocker/tidyverse:4.0.0
+FROM rocker/tidyverse:4.1.0
 
 # Install packages required for `sf`, which in turn is required for `pegas`
 RUN apt update
 RUN apt install -y libgdal-dev libudunits2-dev
 
-# Install R packages
+# Install CRAN packages
 RUN install2.r --error \
     here \
     pegas \
     knitr \
-    karyoploteR \
+    BiocManager \
     ggridges \
-    gwasrapidd \
-    cowplot
+    cowplot \
+    remotes
+    
+# Install `karyoploteR` (bioconductor)
+RUN R -e "BiocManager::install('karyoploteR')"
+
+# Install `gwasrapidd`
+RUN R -e "remotes::install_github('ramiromagno/gwasrapidd')"
