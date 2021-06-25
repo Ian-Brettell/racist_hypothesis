@@ -1,7 +1,8 @@
 FROM rocker/tidyverse:4.1.0
 
 # Install libgdal for `sf`, which in turn is needed for `pegas`
-RUN apt-get install gdal-bin libgdal-dev
+RUN apt update
+RUN apt install libgdal-dev
 
 # Install R packages
 RUN install2.r --error \
