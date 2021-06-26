@@ -1,1 +1,0 @@
-remotes::install_github("ramiromagno/gwasrapidd", upgrade = "never")

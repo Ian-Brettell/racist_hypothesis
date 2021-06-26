@@ -1,63 +1,81 @@
 
+include: "rules/00_common.smk"
+include: "rules/01_1kgp.smk"
+include: "rules/02_assocs.smk"
+#include: "rules/03_data_extractions.smk"
+
 rule all:
     input:
+
+###############
+# 00_common.smk
+###############
+
+#        config["trait_ids_file"],
+
+###############
+# 01_1kgp.smk
+###############
+
+## download_1KG_38_annotated        
 #        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/chrs/{chr}.vcf{gz_ext}"),
 #            chr = CHRS,
-#            gz_ext = GZ_EXTS)
+#            gz_ext = GZ_EXTS),
+## fix_vcf_headers
 #        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
 #            chr = CHRS),
-#        os.path.join(config["working_dir"], "vcfs/1kg/20150319/merged/1kg_all.vcf.gz"),
-#        os.path.join(config["working_dir"], "vcfs/1kg/20150319/merged/1kg_all.vcf.gz.tbi"),
+## get_population_file
+#        config["local_pop_file"],
+## get_population_file_plink
 #        config["local_pop_file_plink"],
-#        expand(os.path.join(config["working_dir"], "plink/fst/by_chr/{chr}.fst"),
-#            chr = CHRS),
-#        os.path.join(config["working_dir"], "plink/fst/1kg/20150319/all.fst.gz"),
-#         os.path.join(config["working_dir"], "vcfs/1kg/merged/1kg_all.vcf.gz"),
-#        expand("data/gwasrapidd/{date}/assocations_raw/{efo_id}.rds",
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS),
-#        expand("data/gwasrapidd/{date}/variants_raw/{efo_id}.rds",
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS),
-#        expand("data/gwasrapidd/{date}/assocations_snp_ids/{efo_id}.txt",
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS),
-#        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS,
-#            chr = CHRS),
-        expand("data/gwasrapidd/{date}/studies_raw/{efo_id}.rds",
+
+###############
+# 02_assocs.smk
+###############
+
+# get associations
+        expand("data/gwasrapidd/{date}/associations_raw/{efo_id}.rds",
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS),
+            efo_id = EFO_IDS
+        ),
+# get studies
         expand("data/gwasrapidd/{date}/studies_key/{efo_id}.rds",
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS),   
-#        expand("data/gwasrapidd/{date}/associations_clean/{efo_id}.csv",
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS),
-#        expand("data/gwasrapidd/{date}/final/final.csv.gz",
-#            date = DATE_OF_COLLECTION),
-#        expand("data/gwasrapidd/{date}/vcfs/{efo_id}.vcf.gz",
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS),
-#        expand("data/gwasrapidd/{date}/plink/fst/{efo_id}.fst",
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS),
-        expand("data/gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz",
+            efo_id = EFO_IDS
+        ),
+        expand("data/gwasrapidd/{date}/studies_raw/{efo_id}.rds",
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS),
-        expand("data/gwasrapidd/{date}/plink/recode_012/{efo_id}.traw",
+            efo_id = EFO_IDS
+        ),
+# get_snp_ids
+        expand("data/gwasrapidd/{date}/associations_snp_ids/{efo_id}.txt",
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS),
-        expand("data/gwasrapidd/{date}/p-values/{efo_id}.txt",
+            efo_id = EFO_IDS
+        ),
+# extract_gtypes
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz"),
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS),
+            efo_id = EFO_IDS,
+            chr = CHRS
+        ),
+# merge_gtypes
+        expand("data/gwasrapidd/{date}/vcfs/{efo_id}.vcf.gz",
+            date = DATE_OF_COLLECTION,
+            efo_id = EFO_IDS
+        ),
+
+###############
+# 03_data_extraction.smk
+###############
+
+# get_fst
+        expand("data/gwasrapidd/{date}/pegas/fst/fst.rds",
+            date = DATE_OF_COLLECTION
+        ),
+# clump_snps
         expand("data/gwasrapidd/{date}/plink/clumped/{efo_id}.clumped",
             date = DATE_OF_COLLECTION,
             efo_id = EFO_IDS)
 
 
-include: "rules/00_common.smk"
-include: "rules/01_1kgp.smk"
-include: "rules/02_assocs.smk"
-include: "rules/03_data_extractions.smk"
+

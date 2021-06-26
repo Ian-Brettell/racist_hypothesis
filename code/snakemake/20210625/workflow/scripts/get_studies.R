@@ -16,6 +16,11 @@ studies_key = gwasrapidd::association_to_study(unique(assocs@associations$associ
 
 studies = gwasrapidd::get_studies(study_id = unique(studies_key$study_id))
 
+# Create output directories
+
+dir.create(dirname(snakemake@output[["key"]]), showWarnings = F, recursive = T)
+dir.create(dirname(snakemake@output[["studies"]]), showWarnings = F, recursive = T)
+
 # Save to file
 
 saveRDS(studies_key, snakemake@output[["key"]])

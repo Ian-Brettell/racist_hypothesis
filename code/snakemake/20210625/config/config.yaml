@@ -2,22 +2,46 @@ working_dir:
     "/hps/nobackup/birney/users/ian/hmn_fst"
 traits:
     - "body height"
-    - "body mass index",
-    - "self reported educational attainment",
-    - "intelligence",
-    - "inflammatory bowel disease",
-    - "skin pigmentation",
-    - "skin pigmentation measurement",
-    - "eye color",
-    - "eye colour measurement",
-    - "hair color",
-    - "hair colour measurement",
-    - "schizophrenia",
-    - "unipolar depression",
-    - "fasting blood glucose measurement",
-    - "myocardial infarction",
-    - "low density lipoprotein cholesterol measurement",
+    - "body mass index"
+    - "educational attainment"
+    - "self reported educational attainment"
+    - "intelligence"
+    - "mental process"
+    - "mathematical ability"
+    - "cognition"
+    - "digestive system disease"
+    - "inflammatory bowel disease"
+    - "crohn's disease"
+    - "celiac disease"
+    - "autoimmune disease"
+    - "hypersensitivity reaction disease"
+    - "skin pigmentation"
+    - "skin pigmentation measurement"
+    - "facial morphology"
+    - "facial morphology measurement"
+    - "nose morphology measurement"
+    - "eye color"
+    - "eye colour measurement"
+    - "hair color"
+    - "hair colour measurement"
+    - "hair morphology"
+    - "hair morphology measurement"
+    - "hair shape measurement"
+    - "asthma"
+    - "malaria"
+    - "cardiovascular disease"
+    - "cardiovascular disease biomarker measurement"
+    - "diabetes mellitus"
+    - "parkinson's disease"
+    - "Alzheimer's disease"
+    - "schizophrenia"
+    - "unipolar depression"
+    - "fasting blood glucose measurement"
+    - "myocardial infarction"
+    - "low density lipoprotein cholesterol measurement"
     - "platelet count"
+trait_ids_file:
+    "code/snakemake/20210625/config/trait_ids.tsv"
 contigs:
     - 1
     - 2
@@ -64,20 +88,22 @@ tmp_dir:
 #####################
 # Containers
 #####################
-picard:
-    "docker://quay.io/biocontainers/picard:2.25.6--hdfd78af_0"
+#picard:
+#    "docker://quay.io/biocontainers/picard:2.25.6--hdfd78af_0"
 bash:
     "docker://bash:5.1.8"
 R:
-    "docker://brettellebi/human_traits_fst:rocker_tidyverse_4.1.0_20210625"
+    "docker://brettellebi/human_traits_fst:R_4.1.0"
 bcftools:
     "docker://quay.io/biocontainers/bcftools:1.10--h5d15f04_0"
 plink1.9:
     "docker://biocontainers/plink1.9:v1.90b3.45-170113-1-deb_cv1"
 
-
+#####################
+# Key files
+#####################
 ftp_pop_file:
-    "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx"
+    "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx"
 local_pop_file:
     "data/1kg_populations.csv"
 local_pop_file_plink:
@@ -89,7 +115,7 @@ get_associations_script:
 get_variants_script:
     "code/scripts/get_variants.R"
 
-    #####################
+#####################
 # Variables
 #####################
 clump_r2:

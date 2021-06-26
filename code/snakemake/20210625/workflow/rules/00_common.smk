@@ -12,53 +12,31 @@ import pandas as pd
 # Config file
 configfile: "code/snakemake/20210625/config/config.yaml"
 
-CHRS  = [str(chrom) for chrom in list(range(1,23))]
-
-CHRS_TEST = ['22']
+CHRS  = config["contigs"]
 
 # Date of GWAS data collection
 DATE_OF_COLLECTION = config["date_of_gwas_collection"]
 
-# Date of dbSNP data collection
-DATE_OF_DBSNP_COLLECTION = config["date_of_dbsnp_collection"]
-
 # Extensions
 GZ_EXTS = config["gz_exts"]
 
-# Traits
-EFO_IDS = ["EFO_0004339",
-           "EFO_0004340",
-           "EFO_0004784",
-           "EFO_0004337",
-           "EFO_0003767",
-           "EFO_0003784",
-           "EFO_0007009",
-           "EFO_0003949",
-           "EFO_0009764",
-           "EFO_0003924",
-           "EFO_0007822",
-           "EFO_0000692",
-           "EFO_0003761",
-           "EFO_0004465",
-           "EFO_0000612",
-           "EFO_0004611",
-           "EFO_0004309"]
+## Only to run once, before anything else, to create file with traits and IDs
+## Comment out the two substantive lines below, otherwise will throw an error
+rule trait_ids_file:
+    params:
+        traits = config["traits"]
+    output:
+        config["trait_ids_file"]
+    container:
+        config["R"]
+    script:
+        "../scripts/trait_ids_file.R"
 
-EFO_IDS_TEST = ["EFO_0000612"]
+# Traits
+traits = pd.read_table(config["trait_ids_file"])
+EFO_IDS = traits['efo_id']
 
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 FTP = FTPRemoteProvider()
 
 
-#####################
-# Rules
-#####################
-
-## Only to run once, before anything else, to create file with traits and IDs
-
-rule trait_ids_file:
-    output:
-        "config/trait_ids.tsv"
-    container:
-        ""
-    

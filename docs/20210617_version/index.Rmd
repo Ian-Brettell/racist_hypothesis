@@ -1,0 +1,453 @@
+---
+title: "$F_{ST}$ variation across human traits"
+author: "Ian Brettell"
+date: '`r format(Sys.Date())`'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    dev: 'svg'
+    number_sections: true
+    keep_md: false
+    pandoc_args: --lua-filter=color-text.lua
+    highlight: pygments
+#output: html_notebook
+#editor_options: 
+#  chunk_output_type: inline
+---
+
+
+* [Working directory]{color="#4f0943"} on EBI Codon HPC: `/hps/nobackup/birney/users/ian/hmn_fst`
+* [GitHub repository]{color="#4f0943"}: <https://github.com/brettellebi/human_traits_fst>
+
+
+# Source libraries, functions and plotting parameters
+
+```{r, warning = F, message = F}
+library(here)
+
+source(here::here("code", "scripts", "source.R"))
+```
+
+# Gather and process 1KG VCFs and GWAS Catalog data
+
+Full Snakemake pipeline here: <https://github.com/brettellebi/human_traits_fst/tree/master/code/snakemake/20210416>
+
+```{bash, eval = F}
+cd /hps/software/users/birney/ian/repos/human_traits_fst
+conda activate snakemake
+sing_load
+snmk_proj="20210416"
+
+snakemake \
+  --jobs 5000 \
+  --latency-wait 500 \
+  --cluster-config code/snakemake/$snmk_proj/config/cluster.json \
+  --cluster 'bsub -g /snakemake_bgenie -J {cluster.name} -n {cluster.n} -M {cluster.memory} -o {cluster.output} -e {cluster.error}' \
+  --keep-going \
+  --rerun-incomplete \
+  --use-conda \
+  --use-singularity \
+  -s code/snakemake/$snmk_proj/Snakefile \
+  -p
+```
+
+# Read in data and post-process
+
+```{r, message = F, results = "hide"}
+# Variables
+gcat_traits = gwasrapidd::get_traits(efo_trait = target_traits)
+trait_ids = gcat_traits@traits$efo_id
+names(trait_ids) = trait_ids
+target_dir = here::here("data/gwasrapidd/20210525")
+
+# Read in raw associations objects
+assocs_raw = lapply(trait_ids, function(TRAIT_ID){
+  readRDS(file.path(target_dir, "associations_raw", paste(TRAIT_ID, ".rds", sep = "")))
+})
+
+# Read in raw studies objects
+studies_raw = lapply(trait_ids, function(TRAIT_ID){
+  readRDS(file.path(target_dir, "studies_raw", paste(TRAIT_ID, ".rds", sep = "")))
+})
+
+# Read in association-study key
+studies_key = lapply(trait_ids, function(TRAIT_ID){
+  readRDS(file.path(target_dir, "studies_key", paste(TRAIT_ID, ".rds", sep = "")))  
+})
+
+# Read in genotypes from VCFs
+genos_raw = lapply(trait_ids, function(TRAIT_ID){
+  path = file.path(target_dir, "vcfs", paste(TRAIT_ID, ".vcf.gz", sep = ""))
+  n_variants = nrow(pegas::VCFloci(path))
+  pegas::read.vcf(path, to = n_variants)
+})
+
+# Read in loci from VCFs
+loci_info = lapply(trait_ids, function(TRAIT_ID){
+  out = pegas::VCFloci(file.path(target_dir, "vcfs", paste(TRAIT_ID, ".vcf.gz", sep = "")))
+  out %>%
+    dplyr::mutate(CHROM = as.double(CHROM))
+})
+
+# Create vector of populations
+## Read in population file
+pop_file = readr::read_csv(here::here("data/1kg_populations.csv"))
+## Create vector of populations
+populations = unlist(lapply(rownames(genos_raw[[1]]), function(sample){
+    pop_file$Population[pop_file$Sample == sample]
+}))
+## Create data frame with just 2,504 individuals
+pops_1kg = pop_file %>% 
+  dplyr::filter(Sample %in% rownames(genos_raw[[1]]))
+
+# Read in clumped SNPs
+clumped = lapply(trait_ids, function(TRAIT_ID){
+  readr::read_delim(file.path(target_dir, "plink/clumped", paste(TRAIT_ID, ".clumped", sep = "")),
+                    delim = " ", trim_ws = T)
+})
+
+# Read in 012 genotypes
+genos_012 = lapply(trait_ids, function(TRAIT_ID){
+  readr::read_tsv(file.path(target_dir, "plink/recode_012", paste(TRAIT_ID, ".traw", sep = ""))) %>% 
+    # rename columns to remove duplicated ID
+    dplyr::rename_with(~str_split(.x, pattern = "_", simplify = T) %>% 
+                       subset(select = 1),
+                       .cols = matches("_"))
+})
+
+```
+
+## Counts
+
+How many unique SNPs for each trait?
+
+```{r}
+# How many unique SNPs in associations?
+raw_assocs_count = purrr::map(assocs_raw, function(TRAIT_ID){
+  TRAIT_ID@risk_alleles %>% 
+    dplyr::select(variant_id)
+}) %>% 
+  dplyr::bind_rows(.id = "efo_id") %>% 
+  dplyr::left_join(.,
+                   gcat_traits@traits,
+                   by = "efo_id") %>% 
+  # combine various pigmentation traits
+  dplyr::mutate(TRAIT = dplyr::recode(trait, !!!pig_recode_vec),
+                TRAIT = factor(TRAIT, levels = extended_traits)) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(variant_id) %>% 
+  dplyr::count(name = "N_ASSOCS")
+
+#How many unique SNPs in VCFs
+purrr::map(loci_info, function(TRAIT_ID){
+  TRAIT_ID %>% 
+    dplyr::select(ID)
+}) %>% 
+  dplyr::bind_rows(.id = "efo_id") %>% 
+  dplyr::left_join(.,
+                   gcat_traits@traits,
+                   by = "efo_id") %>% 
+  dplyr::mutate(TRAIT = dplyr::recode(trait, !!!pig_recode_vec),
+                TRAIT = factor(TRAIT, levels = extended_traits)) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(ID) %>% 
+  dplyr::count(name = "N_VCF") %>% 
+  # bind with raw assocs counts
+  dplyr::left_join(raw_assocs_count,
+                   .,
+                   by = "TRAIT") %>% 
+  # Order and add column with percentage
+  dplyr::mutate(PERC_RETREIVED = N_VCF / N_ASSOCS) %>% 
+  dplyr::arrange(.by_group = T) %>% 
+  knitr::kable(.)
+
+
+```
+
+## Calculate Fst with `pegas`
+
+```{r, eval = F}
+fst_pegas = lapply(genos_raw, function(TRAIT_ID){
+  pegas::Fst(TRAIT_ID, pop = populations)
+})
+```
+
+```{r, eval = F, echo = F}
+out_path = here::here("data/gwasrapidd/20210525/pegas/fst/fst.rds")
+dir.create(dirname(out_path), showWarnings = F, recursive = T)
+saveRDS(fst_pegas, out_path)
+```
+
+```{r, echo = F}
+fst_pegas = readRDS(here::here("data/gwasrapidd/20210525/pegas/fst/fst.rds"))
+```
+
+## Bind relevant data
+
+```{r}
+fst_pegas_df = lapply(trait_ids, function(TRAIT_ID){
+  # Loci info
+  loci = loci_info[[TRAIT_ID]] %>% 
+    dplyr::select(CHROM, POS, ID, REF, ALT)
+  # Risk alleles
+  risk_alleles = assocs_raw[[TRAIT_ID]]@risk_alleles %>% 
+    dplyr::select(association_id, variant_id, risk_allele)
+  # Study key
+  study_key = studies_key[[TRAIT_ID]]
+  # Studies
+  studies = studies_raw[[TRAIT_ID]]@studies %>% 
+    dplyr::select(study_id, initial_sample_size, replication_sample_size)
+  # Fst
+  fst = fst_pegas[[TRAIT_ID]] %>%
+    data.frame(.) %>% 
+    tibble::rownames_to_column(var = "ID") %>% 
+    dplyr::select(ID, FST_PEGAS = Fst)
+  
+  # Bind all
+  out = dplyr::left_join(loci, risk_alleles, by = c("ID" = "variant_id")) %>% 
+    dplyr::left_join(study_key, by = "association_id") %>% 
+    dplyr::left_join(studies, by = "study_id") %>% 
+    dplyr::left_join(fst, by = "ID")
+}) %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>%
+  # Add `trait` for each `efo_id` from `gcat_traits` key
+  dplyr::left_join(gcat_traits@traits %>% 
+                     dplyr::select(efo_id, trait),
+                   by = c("EFO_ID" = "efo_id")) %>% 
+  dplyr::select(EFO_ID, trait, everything()) %>% 
+  # Recode Pigmentation traits
+  dplyr::mutate(TRAIT = dplyr::recode(trait, !!!pig_recode_vec)) %>% 
+  # Factorise to order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = extended_traits))
+
+# Create a second df with clumped SNPs
+## Get clumped SNPs
+clumped_snps = lapply(clumped, function(TRAIT_ID) {
+  TRAIT_ID %>%
+    dplyr::pull(SNP)
+}) %>% purrr::flatten_chr()
+## Create list and bind
+fst_pegas_df_clumps= list(
+  "ALL" = fst_pegas_df,
+  "CLUMPED" = fst_pegas_df %>% 
+    dplyr::filter(ID %in% clumped_snps)
+) %>% 
+  dplyr::bind_rows(.id = "FILTER")
+
+# How many unique SNPs in total (having grouped by TRAIT)
+fst_pegas_df_clumps %>% 
+  dplyr::filter(FILTER == "ALL") %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(ID) %>% 
+  nrow()
+
+# How many unique SNPs in total after clumping (having grouped by TRAIT)
+fst_pegas_df_clumps %>% 
+  dplyr::filter(FILTER == "CLUMPED") %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(ID) %>% 
+  nrow()
+
+```
+
+# Plot
+
+## Initial counts of variants
+
+```{r}
+fst_pegas_df_clumps %>%
+  # create new column combining skin pigmentation traits
+  dplyr::mutate(trait_with_pig = dplyr::recode(trait,
+                                               "skin pigmentation" = "skin pigmentation / measurement",
+                                               "skin pigmentation measurement" = "skin pigmentation / measurement")) %>% 
+  # order traits
+  dplyr::mutate(trait_with_pig = factor(trait_with_pig, levels = traits_with_pig)) %>%
+  # remove all pigmentation traits other than skin pigmentation and skin pigmentation measurement
+  dplyr::filter(trait_with_pig %in% traits_with_pig) %>% 
+  # group by FILTER and TRAIT to take unique SNPs within each group
+  dplyr::group_by(FILTER, trait_with_pig) %>% 
+  # take unique IDs
+  dplyr::distinct(ID, .keep_all = T) %>% 
+  # ungroup
+  dplyr::ungroup() %>% 
+  # plot
+  ggplot() +
+    geom_bar(aes(trait_with_pig, fill = trait_with_pig)) +
+    scale_fill_manual(values = pal_primary_with_pig) +
+    theme_bw() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank()) +
+    ylab("N loci") +
+    facet_wrap(~FILTER, nrow = 2)
+```
+
+## $F_{ST}$ ridges
+
+```{r, fig.cap = "$F_{ST}$ calculated with 26 populations", fig.height=10, fig.width=8}
+fst_pegas_df_clumps %>% 
+  # filter for clumped index SNPs
+  dplyr::filter(FILTER == "CLUMPED") %>%
+  # create new column combining skin pigmentation traits
+  dplyr::mutate(trait_with_pig = dplyr::recode(trait,
+                                               "skin pigmentation" = "skin pigmentation / measurement",
+                                               "skin pigmentation measurement" = "skin pigmentation / measurement")) %>% 
+  # remove all pigmentation traits other than skin pigmentation and skin pigmentation measurement
+  dplyr::filter(trait_with_pig %in% traits_with_pig) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(trait_with_pig) %>% 
+  # take unique IDs
+  dplyr::distinct(ID, .keep_all = T) %>%
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(trait_with_pig = factor(trait_with_pig, levels = rev(traits_with_pig))) %>%
+  # plot
+  ggplot(aes(FST_PEGAS, trait_with_pig, fill = trait_with_pig, colour = trait_with_pig)) +
+    geom_density_ridges(scale = 2,
+                        bandwidth = 0.003,
+                        calc_ecdf = TRUE,
+                        quantiles = c(0.5, 0.9),
+                        quantile_lines = T,
+                        jittered_points = T,
+                        point_shape = '|', alpha = 0.85, point_size = 2,
+                        position = position_points_jitter(height = 0),
+    ) +
+  scale_fill_manual(values = pal_primary_with_pig) +
+  scale_colour_manual(values = karyoploteR::darker(pal_primary_with_pig)) +
+  guides(fill = F, colour = F) +
+  theme_bw() +
+  scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+  ylab(NULL) +
+  ggtitle("Median and 90%") 
+```
+
+## $F_{ST}$ eCDF 
+
+```{r, fig.height=8, fig.width=8, fig.cap = "Faceted"}
+fst_pegas_df_clumps %>% 
+  # filter for clumped index SNPs
+  dplyr::filter(FILTER == "CLUMPED") %>%
+
+  # create new column combining skin pigmentation traits
+  dplyr::mutate(trait_with_pig = dplyr::recode(trait,
+                                               "skin pigmentation" = "skin pigmentation / measurement",
+                                               "skin pigmentation measurement" = "skin pigmentation / measurement")) %>% 
+  # remove all pigmentation traits other than skin pigmentation and skin pigmentation measurement
+  dplyr::filter(trait_with_pig %in% traits_with_pig) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(trait_with_pig) %>% 
+  # take unique IDs
+  dplyr::distinct(ID, .keep_all = T) %>%
+  # order traits
+  dplyr::mutate(trait_with_pig = factor(trait_with_pig, levels = traits_with_pig)) %>%
+  # plot
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = trait_with_pig)) +
+    scale_colour_manual(values = pal_primary_with_pig) +
+    guides(colour = F) +
+    facet_wrap(~trait_with_pig, ncol = 3) +
+    theme_bw() +
+    ggtitle("ECDF") +
+    labs(colour = "Trait",
+         x = expression(F[ST]),
+         y = NULL)
+```
+
+```{r, fig.height=8, fig.width=12, fig.cap = "Unfaceted"}
+fst_pegas_df_clumps %>% 
+  # filter for clumped index SNPs
+  dplyr::filter(FILTER == "CLUMPED") %>%
+
+  # create new column combining skin pigmentation traits
+  dplyr::mutate(trait_with_pig = dplyr::recode(trait,
+                                               "skin pigmentation" = "skin pigmentation / measurement",
+                                               "skin pigmentation measurement" = "skin pigmentation / measurement")) %>% 
+  # remove all pigmentation traits other than skin pigmentation and skin pigmentation measurement
+  dplyr::filter(trait_with_pig %in% traits_with_pig) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(trait_with_pig) %>% 
+  # take unique IDs
+  dplyr::distinct(ID, .keep_all = T) %>%
+  # order traits
+  dplyr::mutate(trait_with_pig = factor(trait_with_pig, levels = traits_with_pig)) %>%
+  # plot
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = trait_with_pig)) +
+    scale_colour_manual(values = pal_primary_with_pig) +
+    theme_bw() +
+    ggtitle("ECDF") +
+    labs(colour = "Trait",
+         x = expression(F[ST]),
+         y = NULL)
+```
+
+# Kolmogorov-Smirnov tests
+
+Comparing $F_{ST}$ distributions of each trait against each other.
+
+```{r, warning=F, message=F}
+ks_list = fst_pegas_df_clumps %>% 
+  # filter for clumped index SNPs
+  dplyr::filter(FILTER == "CLUMPED") %>%
+
+  # create new column combining skin pigmentation traits
+  dplyr::mutate(trait_with_pig = dplyr::recode(trait,
+                                               "skin pigmentation" = "skin pigmentation / measurement",
+                                               "skin pigmentation measurement" = "skin pigmentation / measurement")) %>% 
+  # remove all pigmentation traits other than skin pigmentation and skin pigmentation measurement
+  dplyr::filter(trait_with_pig %in% traits_with_pig) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(trait_with_pig) %>% 
+  # take unique IDs
+  dplyr::distinct(ID, .keep_all = T) %>%
+  # order traits
+  dplyr::mutate(trait_with_pig = factor(trait_with_pig, levels = traits_with_pig)) %>% 
+  # split by trait
+  split(., f = .$trait_with_pig)
+
+# Run KS test
+ks_out = purrr::map(ks_list, function(TRAIT_1){
+  lapply(ks_list, function(TRAIT_2){
+    out = ks.test(TRAIT_1$FST_PEGAS,
+                  TRAIT_2$FST_PEGAS)
+    df = data.frame(D_STATISTIC = out$statistic,
+                    P_VALUE = out$p.value)
+  }) %>% 
+    dplyr::bind_rows(.id = "TRAIT_2")
+}) %>% 
+  dplyr::bind_rows(.id = "TRAIT_1") %>% 
+  # order TRAIT variables
+  dplyr::mutate(TRAIT_1 = factor(TRAIT_1, levels = traits_with_pig),
+                TRAIT_2 = factor(TRAIT_2, levels = traits_with_pig))
+
+```
+
+## D-statistic
+
+```{r, fig.height=9, fig.width=10}
+ks_out %>% 
+  # plot
+  ggplot() +
+    geom_tile(aes(TRAIT_1, TRAIT_2, fill = D_STATISTIC)) + 
+    scale_fill_viridis_c() +
+    theme_bw() + 
+    coord_fixed() +
+    labs(x = NULL, y = NULL) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## P-value
+
+```{r, fig.height=9, fig.width=10}
+ks_out %>% 
+  # plot
+  ggplot() +
+    geom_tile(aes(TRAIT_1, TRAIT_2, fill = P_VALUE)) + 
+    scale_fill_viridis_c(option = "inferno") +
+    theme_bw() + 
+    coord_fixed() +
+    labs(x = NULL, y = NULL) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+

@@ -2,10 +2,8 @@ __default__:
   memory: 5000
   n: 1
   name: "{rule}.{wildcards}"
-  outdir: "/hps/nobackup/birney/users/ian/somites/logs/{rule}"
-  outfile: "/hps/nobackup/birney/users/ian/somites/logs/{rule}/%J_{wildcards}.out"
-  error: "/hps/nobackup/birney/users/ian/somites/logs/{rule}/%J_{wildcards}.err"
-marge_vcfs:
-  memory: 60000
-consolidate_fst:
-  memory: 30000
+  outdir: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}"
+  outfile: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}/%J_{wildcards}.out"
+  error: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}/%J_{wildcards}.err"
+get_fst:
+  memory: 50000

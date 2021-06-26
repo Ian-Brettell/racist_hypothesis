@@ -1,0 +1,12 @@
+name: "$F_{ST}$ variation across human traits"
+output_dir: "."
+navbar:
+  title: "Fst variation across human traits"
+  left:
+    - text: "Analysis"
+      href: index.html
+    - text: "Distribution of trait-increasing alleles"
+      href: distribution_of_trait-increasing_alleles.html
+output:
+  html_document:
+    theme: flatly
