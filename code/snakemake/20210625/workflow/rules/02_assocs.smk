@@ -1,4 +1,16 @@
 
+rule get_all_associations:
+    input:
+        config["all_trait_ids_file"]
+    output:
+        expand(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds")
+    params:
+        output_dir = lambda wildcards, output: os.path.dirname(str(output[0]))
+    container:
+        config["R"]
+    script:
+        "../scripts/get_all_associations.R"
+
 rule get_associations:
     output:
         "data/gwasrapidd/{date}/associations_raw/{efo_id}.rds"

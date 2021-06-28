@@ -1,0 +1,70 @@
+PLINK v1.90b3.45 64-bit (13 Jan 2017)
+Options in effect:
+  --clump data/gwasrapidd/20210626/p-values/EFO_0000270.txt
+  --clump-kb 1000
+  --clump-p1 0.00000001
+  --clump-p2 0.00000001
+  --clump-r2 0.1
+  --out data/gwasrapidd/20210626/plink/clumped/EFO_0000270
+  --vcf data/gwasrapidd/20210626/vcfs/EFO_0000270.vcf.gz
+
+Hostname: hl-codon-24-02.ebi.ac.uk
+Working directory: /hps/software/users/birney/ian/repos/human_traits_fst
+Start time: Mon Jun 28 14:37:37 2021
+
+Random number seed: 1624887457
+385341 MB RAM detected; reserving 192670 MB for main workspace.
+--vcf: data/gwasrapidd/20210626/plink/clumped/EFO_0000270-temporary.bed +
+data/gwasrapidd/20210626/plink/clumped/EFO_0000270-temporary.bim +
+data/gwasrapidd/20210626/plink/clumped/EFO_0000270-temporary.fam written.
+1315 variants loaded from .bim file.
+2504 people (0 males, 0 females, 2504 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+data/gwasrapidd/20210626/plink/clumped/EFO_0000270.nosex .
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 2504 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.999273.
+1315 variants and 2504 people pass filters and QC.
+Note: No phenotypes present.
+Warning: 'rs7755224' is missing from the main dataset, and is a top variant.
+Warning: 'rs1694112' is missing from the main dataset, and is a top variant.
+Warning: 'rs1198807554' is missing from the main dataset, and is a top variant.
+Warning: 'rs793607' is missing from the main dataset, and is a top variant.
+Warning: 'rs2057656' is missing from the main dataset, and is a top variant.
+Warning: 'rs6901830' is missing from the main dataset, and is a top variant.
+Warning: 'rs3032952' is missing from the main dataset, and is a top variant.
+Warning: 'rs796632525' is missing from the main dataset, and is a top variant.
+Warning: 'rs152271219' is missing from the main dataset, and is a top variant.
+Warning: 'rs776111176' is missing from the main dataset, and is a top variant.
+Warning: 'rs1241357' is missing from the main dataset, and is a top variant.
+Warning: 'rs9273349' is missing from the main dataset, and is a top variant.
+Warning: 'rs4526212' is missing from the main dataset, and is a top variant.
+Warning: 'rs761202278' is missing from the main dataset, and is a top variant.
+Warning: 'rs71266076' is missing from the main dataset, and is a top variant.
+Warning: 'rs1227677510' is missing from the main dataset, and is a top variant.
+Warning: 'rs1202085373' is missing from the main dataset, and is a top variant.
+Warning: 'rs201267172' is missing from the main dataset, and is a top variant.
+Warning: 'rs850637' is missing from the main dataset, and is a top variant.
+Warning: 'rs112430285' is missing from the main dataset, and is a top variant.
+Warning: 'rs3095318' is missing from the main dataset, and is a top variant.
+Warning: 'chr17:38040119' is missing from the main dataset, and is a top
+variant.
+Warning: 'rs5953283' is missing from the main dataset, and is a top variant.
+Warning: 'rs112796209' is missing from the main dataset, and is a top variant.
+Warning: 'rs114559131' is missing from the main dataset, and is a top variant.
+Warning: 'rs377150901' is missing from the main dataset, and is a top variant.
+Warning: 'rs7212938' is missing from the main dataset, and is a top variant.
+Warning: 'chr6:32623277' is missing from the main dataset, and is a top
+variant.
+Warning: 'rs776871909' is missing from the main dataset, and is a top variant.
+Warning: 'rs750065349' is missing from the main dataset, and is a top variant.
+Warning: 'rs372362333' is missing from the main dataset, and is a top variant.
+Warning: 'rs1401084970' is missing from the main dataset, and is a top variant.
+Warning: 'rs755023315' is missing from the main dataset, and is a top variant.
+Warning: 'rs768512669' is missing from the main dataset, and is a top variant.
+Warning: 'rs772675085' is missing from the main dataset, and is a top variant.
+--clump: 338 clumps formed from 748 top variants.
+Results written to data/gwasrapidd/20210626/plink/clumped/EFO_0000270.clumped .
+
+End time: Mon Jun 28 14:37:37 2021

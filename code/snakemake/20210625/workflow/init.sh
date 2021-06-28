@@ -19,12 +19,11 @@ snakemake \
 
 # For R
 
-bsub -Is """
+bsub -M 20000 -Is """
 singularity shell --bind /hps/software/users/birney/ian/rstudio_db:/var/lib/rstudio-server \
                   --bind /hps/software/users/birney/ian/tmp:/tmp \
                   --bind /hps/software/users/birney/ian/run:/run \
                   docker://brettellebi/human_traits_fst:R_4.1.0
 """
-
 # Then run rserver, setting path of config file containing library path
 rserver --rsession-config-file /hps/software/users/birney/ian/repos/human_traits_fst/code/snakemake/20210625/workflow/envs/rstudio_server/rsession.conf

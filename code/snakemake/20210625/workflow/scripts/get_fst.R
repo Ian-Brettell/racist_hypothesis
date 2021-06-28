@@ -31,4 +31,4 @@ fst_pegas = lapply(genos_raw, function(TRAIT_ID){
 # Write to RDS file
 
 dir.create(dirname(snakemake@output[[1]]), showWarnings = F, recursive = T)
-saveRDS(fst_pegas, out_path)
+saveRDS(fst_pegas, snakemake@output[[1]])

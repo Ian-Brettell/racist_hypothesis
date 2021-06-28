@@ -2,21 +2,17 @@
 include: "rules/00_common.smk"
 include: "rules/01_1kgp.smk"
 include: "rules/02_assocs.smk"
-#include: "rules/03_data_extractions.smk"
+include: "rules/03_data_extraction.smk"
 
 rule all:
     input:
-
 ###############
 # 00_common.smk
 ###############
-
 #        config["trait_ids_file"],
-
 ###############
 # 01_1kgp.smk
 ###############
-
 ## download_1KG_38_annotated        
 #        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/chrs/{chr}.vcf{gz_ext}"),
 #            chr = CHRS,
@@ -28,11 +24,14 @@ rule all:
 #        config["local_pop_file"],
 ## get_population_file_plink
 #        config["local_pop_file_plink"],
-
 ###############
 # 02_assocs.smk
 ###############
-
+# get all associations
+        expand(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds",
+            date = DATE_OF_COLLECTION,
+            efo_id = EFO_IDS
+        ),
 # get associations
         expand("data/gwasrapidd/{date}/associations_raw/{efo_id}.rds",
             date = DATE_OF_COLLECTION,
@@ -63,19 +62,23 @@ rule all:
             date = DATE_OF_COLLECTION,
             efo_id = EFO_IDS
         ),
-
-###############
-# 03_data_extraction.smk
-###############
-
+################
+## 03_data_extraction.smk
+################
 # get_fst
         expand("data/gwasrapidd/{date}/pegas/fst/fst.rds",
             date = DATE_OF_COLLECTION
         ),
-# clump_snps
-        expand("data/gwasrapidd/{date}/plink/clumped/{efo_id}.clumped",
+# get_p_values
+        expand("data/gwasrapidd/{date}/p-values/{efo_id}.txt",
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS)
+            efo_id = EFO_IDS
+        ),
+# clump_snps
+        expand("data/gwasrapidd/{date}/plink/clumped/{efo_id}.log",
+            date = DATE_OF_COLLECTION,
+            efo_id = EFO_IDS
+        )
 
 
 

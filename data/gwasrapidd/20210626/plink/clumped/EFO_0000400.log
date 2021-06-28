@@ -1,0 +1,33 @@
+PLINK v1.90b3.45 64-bit (13 Jan 2017)
+Options in effect:
+  --clump data/gwasrapidd/20210626/p-values/EFO_0000400.txt
+  --clump-kb 1000
+  --clump-p1 0.00000001
+  --clump-p2 0.00000001
+  --clump-r2 0.1
+  --out data/gwasrapidd/20210626/plink/clumped/EFO_0000400
+  --vcf data/gwasrapidd/20210626/vcfs/EFO_0000400.vcf.gz
+
+Hostname: hl-codon-24-02.ebi.ac.uk
+Working directory: /hps/software/users/birney/ian/repos/human_traits_fst
+Start time: Mon Jun 28 14:37:32 2021
+
+Random number seed: 1624887452
+385341 MB RAM detected; reserving 192670 MB for main workspace.
+--vcf: data/gwasrapidd/20210626/plink/clumped/EFO_0000400-temporary.bed +
+data/gwasrapidd/20210626/plink/clumped/EFO_0000400-temporary.bim +
+data/gwasrapidd/20210626/plink/clumped/EFO_0000400-temporary.fam written.
+201 variants loaded from .bim file.
+2504 people (0 males, 0 females, 2504 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+data/gwasrapidd/20210626/plink/clumped/EFO_0000400.nosex .
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 2504 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.999986.
+201 variants and 2504 people pass filters and QC.
+Note: No phenotypes present.
+--clump: 56 clumps formed from 65 top variants.
+Results written to data/gwasrapidd/20210626/plink/clumped/EFO_0000400.clumped .
+
+End time: Mon Jun 28 14:37:33 2021

@@ -26,8 +26,38 @@ output:
 ```{r, warning = F, message = F}
 library(here)
 
-source(here::here("code", "scripts", "source.R"))
+source(here::here("docs/20210628_source.R"))
 ```
+
+# Get full list of traits, associations and studies from the GWAS Catalog
+
+```{r, eval = F}
+date_of_collection = "20210628"
+long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
+
+# Get list of all traits in database
+all_traits = gwasrapidd::get_traits()
+
+# Download associations for all traits. 
+#Need to do them sequentially because the GWAS Catalog can't handle dozens (let alone thousands) of simultaneous queries.
+counter = 0
+all_assocs = lapply(all_traits@traits$efo_id, function(EFO_ID) {
+  counter <<- counter + 1
+  # set output file name
+  out_path = file.path(long_term_dir,
+                       date_of_collection,
+                       paste(EFO_ID, ".rds", sep = ""))
+  # if output file doesn't already exist, get associations and save
+  if (!file.exists(out_path)){
+    out = gwasrapidd::get_associations(efo_id = EFO_ID)
+    saveRDS(out, out_path)
+  } else {
+    print(paste(counter, ". ", EFO_ID, ": File already exists.", sep = ""))
+  }
+  # save
+})
+```
+
 
 # Gather and process 1KG VCFs and GWAS Catalog data
 
