@@ -7,7 +7,7 @@ conda activate snakemake_6.4.1
 smk_proj="20210625"
 snakemake \
   --jobs 5000 \
-  --latency-wait 100 \
+  --latency-wait 300 \
   --cluster-config code/snakemake/$smk_proj/config/cluster.yaml \
   --cluster 'bsub -g /snakemake_bgenie -J {cluster.name} -n {cluster.n} -M {cluster.memory} -outdir {cluster.outdir} -o {cluster.outfile} -e {cluster.error}' \
   --keep-going \

@@ -1,23 +1,9 @@
 
-rule get_fst:
-    input:
-        vcfs = expand("data/gwasrapidd/{date}/vcfs/{efo_id}.vcf.gz",
-                        date = DATE_OF_COLLECTION,
-                        efo_id = EFO_IDS
-                    ),
-        pop_file = config["local_pop_file"]
-    output:
-        "data/gwasrapidd/{date}/pegas/fst/fst.rds"
-    container:
-        config["R"]
-    script:
-        "../scripts/get_fst.R"
-
 rule get_p_values:
     input:
-        "data/gwasrapidd/{date}/associations_raw/{efo_id}.rds"
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds")
     output:
-        "data/gwasrapidd/{date}/p-values/{efo_id}.txt"
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/p-values/{efo_id}.txt")
     container:
         config["R"]
     script:
@@ -25,10 +11,10 @@ rule get_p_values:
 
 rule clump_snps:
     input:
-        vcf = "data/gwasrapidd/{date}/vcfs/{efo_id}.vcf.gz",
-        p_values = "data/gwasrapidd/{date}/p-values/{efo_id}.txt"
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz"),
+        p_values = os.path.join(config["lts_dir"], "gwasrapidd/{date}/p-values/{efo_id}.txt")
     output:
-        "data/gwasrapidd/{date}/plink/clumped/{efo_id}.log"
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.log")
     params:
         pref = lambda wildcards, output: os.path.splitext(str(output))[0]
     container:
@@ -53,3 +39,28 @@ rule clump_snps:
 # In these cases no `*.clumped` file is produced.
 # For this reason, we have specified the `*.log` file as the output,
 # So that it doesn't cause the snakemake process to fail.
+
+rule get_fst:
+    input:
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz"),
+        pop_file = config["local_pop_file"]
+    output:
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds")
+    container:
+        config["R"]
+    script:
+        "../scripts/get_fst.R"
+
+rule consolidate_fst:
+    input:
+        rds = expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
+            date = DATE_OF_COLLECTION,
+            efo_id = EFO_IDS_FILT
+            )
+    output:
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds")
+    container:
+        config["R"]
+    script:
+        "../scripts/consolidate_fst.R"
+

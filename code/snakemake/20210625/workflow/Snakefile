@@ -27,58 +27,67 @@ rule all:
 ###############
 # 02_assocs.smk
 ###############
-# get all associations
-        expand(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
-        ),
-# get associations
-        expand("data/gwasrapidd/{date}/associations_raw/{efo_id}.rds",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
-        ),
-# get studies
-        expand("data/gwasrapidd/{date}/studies_key/{efo_id}.rds",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
-        ),
-        expand("data/gwasrapidd/{date}/studies_raw/{efo_id}.rds",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
-        ),
-# get_snp_ids
-        expand("data/gwasrapidd/{date}/associations_snp_ids/{efo_id}.txt",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
-        ),
-# extract_gtypes
-        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz"),
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS,
-            chr = CHRS
-        ),
-# merge_gtypes
-        expand("data/gwasrapidd/{date}/vcfs/{efo_id}.vcf.gz",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
-        ),
+## get all associations
+#        expand(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds",
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS
+#        ),
+## get associations
+#        expand("data/gwasrapidd/{date}/associations_raw/{efo_id}.rds",
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS
+#        ),
+## get studies
+#        expand("data/gwasrapidd/{date}/studies_key/{efo_id}.rds",
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS
+#        ),
+#        expand("data/gwasrapidd/{date}/studies_raw/{efo_id}.rds",
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS
+#        ),
+## get_snp_ids
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_snp_ids/{efo_id}.txt"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT
+#        ),
+## extract_gtypes
+#        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT,
+#            chr = CHRS
+#        ),
+## merge_gtypes
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/original/{efo_id}.vcf.gz"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT
+#        ),
+## get_duplicated_sites
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT
+#        ),
 ################
 ## 03_data_extraction.smk
 ################
+## get_p_values
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/p-values/{efo_id}.txt"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT
+#        ),
+## clump_snps
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.log"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT
+#        )
 # get_fst
-        expand("data/gwasrapidd/{date}/pegas/fst/fst.rds",
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
+            date = DATE_OF_COLLECTION,
+            efo_id = EFO_IDS_FILT
+        ),
+# consolidate_fst
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds"),
             date = DATE_OF_COLLECTION
-        ),
-# get_p_values
-        expand("data/gwasrapidd/{date}/p-values/{efo_id}.txt",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
-        ),
-# clump_snps
-        expand("data/gwasrapidd/{date}/plink/clumped/{efo_id}.log",
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS
         )
-
 
 

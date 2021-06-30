@@ -13,4 +13,6 @@ out = dplyr::left_join(in_file@risk_alleles %>%
                             dplyr::select(association_id, pvalue),
                        by = "association_id") %>%
         dplyr::select(SNP = variant_id, P = pvalue) %>%
+        # Filter for SNP IDs with a space in them (which causes errors for Plink1.9)
+        dplyr::filter(!grepl(' ', SNP)) %>%
         readr::write_tsv(snakemake@output[[1]])

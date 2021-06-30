@@ -5,5 +5,5 @@ __default__:
   outdir: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}"
   outfile: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}/%J_{wildcards}.out"
   error: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}/%J_{wildcards}.err"
-get_fst:
-  memory: 50000
+consolidate_fst:
+  memory: 20000

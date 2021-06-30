@@ -1,0 +1,565 @@
+efo_id	trait	uri
+EFO_0001060	celiac disease	http://www.ebi.ac.uk/efo/EFO_0001060
+EFO_0001065	endometriosis	http://www.ebi.ac.uk/efo/EFO_0001065
+EFO_0001068	malaria	http://www.ebi.ac.uk/efo/EFO_0001068
+EFO_0001071	lung carcinoma	http://www.ebi.ac.uk/efo/EFO_0001071
+EFO_0005133	MHPG measurement	http://www.ebi.ac.uk/efo/EFO_0005133
+EFO_0005130	thyroxine measurement	http://www.ebi.ac.uk/efo/EFO_0005130
+EFO_0005110	fatty acid measurement	http://www.ebi.ac.uk/efo/EFO_0005110
+EFO_0005112	gestational age	http://www.ebi.ac.uk/efo/EFO_0005112
+EFO_0005116	urinary metabolite measurement	http://www.ebi.ac.uk/efo/EFO_0005116
+EFO_0005134	amino acid measurement	http://www.ebi.ac.uk/efo/EFO_0005134
+EFO_0003939	energy intake	http://www.ebi.ac.uk/efo/EFO_0003939
+EFO_0003940	physical activity	http://www.ebi.ac.uk/efo/EFO_0003940
+EFO_0004995	lean body mass	http://www.ebi.ac.uk/efo/EFO_0004995
+EFO_0004629	von Willebrand factor measurement	http://www.ebi.ac.uk/efo/EFO_0004629
+EFO_0004300	longevity	http://www.ebi.ac.uk/efo/EFO_0004300
+EFO_0004305	erythrocyte count	http://www.ebi.ac.uk/efo/EFO_0004305
+EFO_0005854	allergic rhinitis	http://www.ebi.ac.uk/efo/EFO_0005854
+EFO_0005921	FEV change measurement	http://www.ebi.ac.uk/efo/EFO_0005921
+EFO_0005937	longitudinal BMI measurement	http://www.ebi.ac.uk/efo/EFO_0005937
+EFO_0005939	parental genotype effect measurement	http://www.ebi.ac.uk/efo/EFO_0005939
+HP_0000545	Myopia	http://purl.obolibrary.org/obo/HP_0000545
+EFO_0006335	systolic blood pressure	http://www.ebi.ac.uk/efo/EFO_0006335
+EFO_0006336	diastolic blood pressure	http://www.ebi.ac.uk/efo/EFO_0006336
+EFO_0006340	mean arterial pressure	http://www.ebi.ac.uk/efo/EFO_0006340
+EFO_0004872	inflammatory biomarker measurement	http://www.ebi.ac.uk/efo/EFO_0004872
+EFO_0006501	carotid plaque build	http://www.ebi.ac.uk/efo/EFO_0006501
+EFO_0006525	cigarettes per day measurement	http://www.ebi.ac.uk/efo/EFO_0006525
+EFO_0006527	smoking status measurement	http://www.ebi.ac.uk/efo/EFO_0006527
+HP_0012235	drug-induced agranulocytosis	http://purl.obolibrary.org/obo/HP_0012235
+EFO_0006781	coffee consumption measurement	http://www.ebi.ac.uk/efo/EFO_0006781
+EFO_0006782	cups of coffee per day measurement	http://www.ebi.ac.uk/efo/EFO_0006782
+EFO_0006788	anxiety disorder	http://www.ebi.ac.uk/efo/EFO_0006788
+EFO_0006792	Lewy body dementia	http://www.ebi.ac.uk/efo/EFO_0006792
+EFO_0006794	cerebrospinal fluid biomarker measurement	http://www.ebi.ac.uk/efo/EFO_0006794
+EFO_0006797	neurofibrillary tangles measurement	http://www.ebi.ac.uk/efo/EFO_0006797
+EFO_0006798	neuritic plaque measurement	http://www.ebi.ac.uk/efo/EFO_0006798
+EFO_0004308	leukocyte count	http://www.ebi.ac.uk/efo/EFO_0004308
+EFO_0004309	platelet count	http://www.ebi.ac.uk/efo/EFO_0004309
+EFO_0004312	vital capacity	http://www.ebi.ac.uk/efo/EFO_0004312
+EFO_0004314	forced expiratory volume	http://www.ebi.ac.uk/efo/EFO_0004314
+EFO_0004318	smoking behavior	http://www.ebi.ac.uk/efo/EFO_0004318
+EFO_0004319	smoking cessation	http://www.ebi.ac.uk/efo/EFO_0004319
+EFO_0004321	attempted suicide	http://www.ebi.ac.uk/efo/EFO_0004321
+EFO_0004325	blood pressure	http://www.ebi.ac.uk/efo/EFO_0004325
+EFO_0004326	heart rate	http://www.ebi.ac.uk/efo/EFO_0004326
+EFO_0004327	electrocardiography	http://www.ebi.ac.uk/efo/EFO_0004327
+EFO_0004329	alcohol drinking	http://www.ebi.ac.uk/efo/EFO_0004329
+EFO_0004337	intelligence	http://www.ebi.ac.uk/efo/EFO_0004337
+EFO_0004338	body weight	http://www.ebi.ac.uk/efo/EFO_0004338
+EFO_0001061	cervical carcinoma	http://www.ebi.ac.uk/efo/EFO_0001061
+GO_0097328	response to carboplatin	http://purl.obolibrary.org/obo/GO_0097328
+EFO_0005208	glomerular filtration rate	http://www.ebi.ac.uk/efo/EFO_0005208
+EFO_0004339	body height	http://www.ebi.ac.uk/efo/EFO_0004339
+EFO_0004340	body mass index	http://www.ebi.ac.uk/efo/EFO_0004340
+EFO_0004341	body fat distribution	http://www.ebi.ac.uk/efo/EFO_0004341
+EFO_0004342	waist circumference	http://www.ebi.ac.uk/efo/EFO_0004342
+EFO_0004343	waist-hip ratio	http://www.ebi.ac.uk/efo/EFO_0004343
+EFO_0004344	birth weight	http://www.ebi.ac.uk/efo/EFO_0004344
+EFO_0004345	corneal topography	http://www.ebi.ac.uk/efo/EFO_0004345
+EFO_0004346	neuroimaging measurement	http://www.ebi.ac.uk/efo/EFO_0004346
+EFO_0004348	hematocrit	http://www.ebi.ac.uk/efo/EFO_0004348
+EFO_0004351	resting heart rate	http://www.ebi.ac.uk/efo/EFO_0004351
+EFO_0004352	mortality	http://www.ebi.ac.uk/efo/EFO_0004352
+EFO_0004354	circadian rhythm	http://www.ebi.ac.uk/efo/EFO_0004354
+EFO_0004357	electroencephalogram measurement	http://www.ebi.ac.uk/efo/EFO_0004357
+EFO_0004363	information processing speed	http://www.ebi.ac.uk/efo/EFO_0004363
+EFO_0004458	c-reactive protein measurement	http://www.ebi.ac.uk/efo/EFO_0004458
+EFO_0004459	ferritin measurement	http://www.ebi.ac.uk/efo/EFO_0004459
+EFO_0004462	PR interval	http://www.ebi.ac.uk/efo/EFO_0004462
+EFO_0004464	brain measurement	http://www.ebi.ac.uk/efo/EFO_0004464
+EFO_0004465	fasting blood glucose measurement	http://www.ebi.ac.uk/efo/EFO_0004465
+EFO_0004466	fasting blood insulin measurement	http://www.ebi.ac.uk/efo/EFO_0004466
+EFO_0004467	insulin measurement	http://www.ebi.ac.uk/efo/EFO_0004467
+EFO_0004468	glucose measurement	http://www.ebi.ac.uk/efo/EFO_0004468
+EFO_0004502	adiponectin measurement	http://www.ebi.ac.uk/efo/EFO_0004502
+EFO_0004505	telomere length	http://www.ebi.ac.uk/efo/EFO_0004505
+EFO_0004509	hemoglobin measurement	http://www.ebi.ac.uk/efo/EFO_0004509
+EFO_0004517	arterial stiffness measurement	http://www.ebi.ac.uk/efo/EFO_0004517
+EFO_0004518	creatinine measurement	http://www.ebi.ac.uk/efo/EFO_0004518
+EFO_0004526	mean corpuscular volume	http://www.ebi.ac.uk/efo/EFO_0004526
+EFO_0004527	mean corpuscular hemoglobin	http://www.ebi.ac.uk/efo/EFO_0004527
+EFO_0004529	lipid measurement	http://www.ebi.ac.uk/efo/EFO_0004529
+EFO_0004530	triglyceride measurement	http://www.ebi.ac.uk/efo/EFO_0004530
+EFO_0004531	urate measurement	http://www.ebi.ac.uk/efo/EFO_0004531
+EFO_0004532	serum gamma-glutamyl transferase measurement	http://www.ebi.ac.uk/efo/EFO_0004532
+EFO_0004533	alkaline phosphatase measurement	http://www.ebi.ac.uk/efo/EFO_0004533
+EFO_0004534	creatine kinase measurement	http://www.ebi.ac.uk/efo/EFO_0004534
+EFO_0004541	HbA1c measurement	http://www.ebi.ac.uk/efo/EFO_0004541
+EFO_0004570	bilirubin measurement	http://www.ebi.ac.uk/efo/EFO_0004570
+EFO_0004574	total cholesterol measurement	http://www.ebi.ac.uk/efo/EFO_0004574
+EFO_0004581	interleukin 18 measurement	http://www.ebi.ac.uk/efo/EFO_0004581
+EFO_0004735	serum alanine aminotransferase measurement	http://www.ebi.ac.uk/efo/EFO_0004735
+EFO_0004584	mean platelet volume	http://www.ebi.ac.uk/efo/EFO_0004584
+EFO_0004587	lymphocyte count	http://www.ebi.ac.uk/efo/EFO_0004587
+EFO_0004591	childhood onset asthma	http://www.ebi.ac.uk/efo/EFO_0004591
+EFO_0004611	low density lipoprotein cholesterol measurement	http://www.ebi.ac.uk/efo/EFO_0004611
+EFO_0004612	high density lipoprotein cholesterol measurement	http://www.ebi.ac.uk/efo/EFO_0004612
+EFO_0004614	apolipoprotein a 1 measurement	http://www.ebi.ac.uk/efo/EFO_0004614
+EFO_0004616	osteoarthritis, knee	http://www.ebi.ac.uk/efo/EFO_0004616
+EFO_0004623	fibrinogen measurement	http://www.ebi.ac.uk/efo/EFO_0004623
+EFO_0004624	prostate specific antigen measurement	http://www.ebi.ac.uk/efo/EFO_0004624
+EFO_0004631	vitamin D measurement	http://www.ebi.ac.uk/efo/EFO_0004631
+EFO_0004632	nevus count	http://www.ebi.ac.uk/efo/EFO_0004632
+EFO_0004639	phospholipid measurement	http://www.ebi.ac.uk/efo/EFO_0004639
+EFO_0004645	response to vaccine	http://www.ebi.ac.uk/efo/EFO_0004645
+EFO_0004653	response to tnf antagonist	http://www.ebi.ac.uk/efo/EFO_0004653
+EFO_0004670	beta-amyloid 1-42 measurement	http://www.ebi.ac.uk/efo/EFO_0004670
+EFO_0004682	QT interval	http://www.ebi.ac.uk/efo/EFO_0004682
+EFO_0004908	testosterone measurement	http://www.ebi.ac.uk/efo/EFO_0004908
+EFO_0000280	Barrett's esophagus	http://www.ebi.ac.uk/efo/EFO_0000280
+EFO_0001358	post-traumatic stress disorder	http://www.ebi.ac.uk/efo/EFO_0001358
+EFO_0000707	squamous cell carcinoma	http://www.ebi.ac.uk/efo/EFO_0000707
+EFO_0004741	blood urea nitrogen measurement	http://www.ebi.ac.uk/efo/EFO_0004741
+GO_1901555	response to paclitaxel	http://purl.obolibrary.org/obo/GO_1901555
+EFO_0004696	sex hormone-binding globulin measurement	http://www.ebi.ac.uk/efo/EFO_0004696
+EFO_0004704	age at menopause	http://www.ebi.ac.uk/efo/EFO_0004704
+EFO_0004705	hypothyroidism	http://www.ebi.ac.uk/efo/EFO_0004705
+EFO_0004713	FEV/FEC ratio	http://www.ebi.ac.uk/efo/EFO_0004713
+EFO_0004723	coronary artery calcification	http://www.ebi.ac.uk/efo/EFO_0004723
+EFO_0004725	metabolite measurement	http://www.ebi.ac.uk/efo/EFO_0004725
+EFO_0004730	hormone measurement	http://www.ebi.ac.uk/efo/EFO_0004730
+EFO_0004731	eye measurement	http://www.ebi.ac.uk/efo/EFO_0004731
+EFO_0005000	leptin measurement	http://www.ebi.ac.uk/efo/EFO_0005000
+EFO_0004747	protein measurement	http://www.ebi.ac.uk/efo/EFO_0004747
+EFO_0004749	CCL2 measurement	http://www.ebi.ac.uk/efo/EFO_0004749
+EFO_0004760	t-tau measurement	http://www.ebi.ac.uk/efo/EFO_0004760
+EFO_0004761	uric acid measurement	http://www.ebi.ac.uk/efo/EFO_0004761
+EFO_0004762	vascular endothelial growth factor measurement	http://www.ebi.ac.uk/efo/EFO_0004762
+EFO_0004784	self reported educational attainment	http://www.ebi.ac.uk/efo/EFO_0004784
+GO_1901557	response to fenofibrate	http://purl.obolibrary.org/obo/GO_1901557
+EFO_0001360	type ii diabetes mellitus	http://www.ebi.ac.uk/efo/EFO_0001360
+EFO_0001365	age-related macular degeneration	http://www.ebi.ac.uk/efo/EFO_0001365
+EFO_0001378	multiple myeloma	http://www.ebi.ac.uk/efo/EFO_0001378
+EFO_0001645	coronary artery disease	http://www.ebi.ac.uk/efo/EFO_0001645
+EFO_0001663	prostate carcinoma	http://www.ebi.ac.uk/efo/EFO_0001663
+EFO_0002506	osteoarthritis	http://www.ebi.ac.uk/efo/EFO_0002506
+EFO_0002508	parkinson's disease	http://www.ebi.ac.uk/efo/EFO_0002508
+EFO_0002609	juvenile idiopathic arthritis	http://www.ebi.ac.uk/efo/EFO_0002609
+EFO_0002618	pancreatic carcinoma	http://www.ebi.ac.uk/efo/EFO_0002618
+EFO_0002690	systemic lupus erythematosus	http://www.ebi.ac.uk/efo/EFO_0002690
+EFO_0003060	non-small cell lung carcinoma	http://www.ebi.ac.uk/efo/EFO_0003060
+EFO_0003095	non-alcoholic fatty liver disease	http://www.ebi.ac.uk/efo/EFO_0003095
+EFO_0003100	peripheral neuropathy	http://www.ebi.ac.uk/efo/EFO_0003100
+EFO_0003144	heart failure	http://www.ebi.ac.uk/efo/EFO_0003144
+EFO_0003761	unipolar depression	http://www.ebi.ac.uk/efo/EFO_0003761
+EFO_0003767	inflammatory bowel disease	http://www.ebi.ac.uk/efo/EFO_0003767
+EFO_0003770	diabetic retinopathy	http://www.ebi.ac.uk/efo/EFO_0003770
+EFO_0004765	visceral adipose tissue measurement	http://www.ebi.ac.uk/efo/EFO_0004765
+EFO_0003778	psoriatic arthritis	http://www.ebi.ac.uk/efo/EFO_0003778
+EFO_0003784	skin pigmentation	http://www.ebi.ac.uk/efo/EFO_0003784
+EFO_0003819	dental caries	http://www.ebi.ac.uk/efo/EFO_0003819
+EFO_0003821	migraine disorder	http://www.ebi.ac.uk/efo/EFO_0003821
+EFO_0003829	alcohol dependence	http://www.ebi.ac.uk/efo/EFO_0003829
+EFO_0003870	brain aneurysm	http://www.ebi.ac.uk/efo/EFO_0003870
+EFO_0003884	chronic kidney disease	http://www.ebi.ac.uk/efo/EFO_0003884
+EFO_0003885	multiple sclerosis	http://www.ebi.ac.uk/efo/EFO_0003885
+EFO_0003888	attention deficit hyperactivity disorder	http://www.ebi.ac.uk/efo/EFO_0003888
+EFO_0003892	pulmonary function measurement	http://www.ebi.ac.uk/efo/EFO_0003892
+EFO_0003898	ankylosing spondylitis	http://www.ebi.ac.uk/efo/EFO_0003898
+HP_0000539	Abnormality of refraction	http://purl.obolibrary.org/obo/HP_0000539
+EFO_0003923	bone density	http://www.ebi.ac.uk/efo/EFO_0003923
+EFO_0003924	hair color	http://www.ebi.ac.uk/efo/EFO_0003924
+EFO_0003926	neuropsychological test	http://www.ebi.ac.uk/efo/EFO_0003926
+EFO_0003958	sunburn	http://www.ebi.ac.uk/efo/EFO_0003958
+EFO_0003959	cleft lip	http://www.ebi.ac.uk/efo/EFO_0003959
+EFO_0004190	open-angle glaucoma	http://www.ebi.ac.uk/efo/EFO_0004190
+EFO_0004191	androgenetic alopecia	http://www.ebi.ac.uk/efo/EFO_0004191
+EFO_0004193	basal cell carcinoma	http://www.ebi.ac.uk/efo/EFO_0004193
+EFO_0004207	pathological myopia	http://www.ebi.ac.uk/efo/EFO_0004207
+EFO_0004208	vitiligo	http://www.ebi.ac.uk/efo/EFO_0004208
+EFO_0004215	anorexia nervosa	http://www.ebi.ac.uk/efo/EFO_0004215
+EFO_0004216	conduct disorder	http://www.ebi.ac.uk/efo/EFO_0004216
+HP_0000483	astigmatism	http://purl.obolibrary.org/obo/HP_0000483
+EFO_0004228	drug-induced liver injury	http://www.ebi.ac.uk/efo/EFO_0004228
+EFO_0004234	erectile dysfunction	http://www.ebi.ac.uk/efo/EFO_0004234
+EFO_0004242	obsessive-compulsive disorder	http://www.ebi.ac.uk/efo/EFO_0004242
+EFO_0000478	Esophageal adenocarcinoma	http://www.ebi.ac.uk/efo/EFO_0000478
+EFO_0004827	economic and social preference	http://www.ebi.ac.uk/efo/EFO_0004827
+EFO_0004832	optic disc size measurement	http://www.ebi.ac.uk/efo/EFO_0004832
+EFO_0004833	neutrophil count	http://www.ebi.ac.uk/efo/EFO_0004833
+EFO_0004810	interleukin-6 measurement	http://www.ebi.ac.uk/efo/EFO_0004810
+EFO_0004246	mucocutaneous lymph node syndrome	http://www.ebi.ac.uk/efo/EFO_0004246
+EFO_0004247	mood disorder	http://www.ebi.ac.uk/efo/EFO_0004247
+EFO_0004239	chronic hepatitis B virus infection	http://www.ebi.ac.uk/efo/EFO_0004239
+EFO_0003785	allergy	http://www.ebi.ac.uk/efo/EFO_0003785
+EFO_0005325	response to angiotensin-converting enzyme inhibitor	http://www.ebi.ac.uk/efo/EFO_0005325
+EFO_0005409	fat body mass	http://www.ebi.ac.uk/efo/EFO_0005409
+EFO_0005411	schizoaffective disorder	http://www.ebi.ac.uk/efo/EFO_0005411
+EFO_0005413	joint damage measurement	http://www.ebi.ac.uk/efo/EFO_0005413
+EFO_0005423	adolescent idiopathic scoliosis	http://www.ebi.ac.uk/efo/EFO_0005423
+EFO_0004812	interleukin-1 beta measurement	http://www.ebi.ac.uk/efo/EFO_0004812
+EFO_0001073	obesity	http://www.ebi.ac.uk/efo/EFO_0001073
+EFO_0001075	ovarian carcinoma	http://www.ebi.ac.uk/efo/EFO_0001075
+EFO_0001357	sporadic amyotrophic lateral sclerosis	http://www.ebi.ac.uk/efo/EFO_0001357
+EFO_0001359	type i diabetes mellitus	http://www.ebi.ac.uk/efo/EFO_0001359
+EFO_0004257	neurotic disorder	http://www.ebi.ac.uk/efo/EFO_0004257
+EFO_0004265	peripheral arterial disease	http://www.ebi.ac.uk/efo/EFO_0004265
+EFO_0004268	sclerosing cholangitis	http://www.ebi.ac.uk/efo/EFO_0004268
+EFO_0004274	gout	http://www.ebi.ac.uk/efo/EFO_0004274
+EFO_0004278	sudden cardiac arrest	http://www.ebi.ac.uk/efo/EFO_0004278
+EFO_0004279	suntan	http://www.ebi.ac.uk/efo/EFO_0004279
+EFO_0005763	pulse pressure measurement	http://www.ebi.ac.uk/efo/EFO_0005763
+EFO_0005088	testicular carcinoma	http://www.ebi.ac.uk/efo/EFO_0005088
+EFO_0004285	albuminuria	http://www.ebi.ac.uk/efo/EFO_0004285
+EFO_0004286	venous thromboembolism	http://www.ebi.ac.uk/efo/EFO_0004286
+EFO_0005035	hippocampal volume	http://www.ebi.ac.uk/efo/EFO_0005035
+EFO_0000714	survival time	http://www.ebi.ac.uk/efo/EFO_0000714
+EFO_0004471	insulin sensitivity measurement	http://www.ebi.ac.uk/efo/EFO_0004471
+EFO_0004750	interleukin 10 measurement	http://www.ebi.ac.uk/efo/EFO_0004750
+EFO_0004753	interleukin 12 measurement	http://www.ebi.ac.uk/efo/EFO_0004753
+EFO_0005093	hip circumference	http://www.ebi.ac.uk/efo/EFO_0005093
+EFO_0005091	monocyte count	http://www.ebi.ac.uk/efo/EFO_0005091
+EFO_0004469	HOMA-B	http://www.ebi.ac.uk/efo/EFO_0004469
+GO_0097338	response to clozapine	http://purl.obolibrary.org/obo/GO_0097338
+EFO_0005132	5-HIAA measurement	http://www.ebi.ac.uk/efo/EFO_0005132
+EFO_0005128	albumin:globulin ratio measurement	http://www.ebi.ac.uk/efo/EFO_0005128
+EFO_0005131	HVA measurement	http://www.ebi.ac.uk/efo/EFO_0005131
+GO_0006306	DNA methylation	http://purl.obolibrary.org/obo/GO_0006306
+EFO_0005272	sleep quality	http://www.ebi.ac.uk/efo/EFO_0005272
+EFO_0005230	anxiety	http://www.ebi.ac.uk/efo/EFO_0005230
+GO_0072718	response to cisplatin	http://purl.obolibrary.org/obo/GO_0072718
+Orphanet_398934	malignant epithelial tumor of ovary	http://www.orpha.net/ORDO/Orphanet_398934
+Orphanet_232	sickle cell anemia	http://www.orpha.net/ORDO/Orphanet_232
+GO_0061477	response to aromatase inhibitor	http://purl.obolibrary.org/obo/GO_0061477
+EFO_0004838	calcium measurement	http://www.ebi.ac.uk/efo/EFO_0004838
+EFO_0004840	cortical thickness	http://www.ebi.ac.uk/efo/EFO_0004840
+EFO_0004842	eosinophil count	http://www.ebi.ac.uk/efo/EFO_0004842
+EFO_0004847	age at onset	http://www.ebi.ac.uk/efo/EFO_0004847
+EFO_0004860	common carotid intimal medial thickness	http://www.ebi.ac.uk/efo/EFO_0004860
+EFO_0005192	red blood cell distribution width	http://www.ebi.ac.uk/efo/EFO_0005192
+EFO_0003756	autism spectrum disorder	http://www.ebi.ac.uk/efo/EFO_0003756
+EFO_0005193	serum IgG glycosylation measurement	http://www.ebi.ac.uk/efo/EFO_0005193
+EFO_0005194	amyloid-beta measurement	http://www.ebi.ac.uk/efo/EFO_0005194
+EFO_0005199	renal transplant outcome measurement	http://www.ebi.ac.uk/efo/EFO_0005199
+EFO_0005202	response to hydrochlorothiazide	http://www.ebi.ac.uk/efo/EFO_0005202
+EFO_0004874	memory performance	http://www.ebi.ac.uk/efo/EFO_0004874
+EFO_0004875	mathematical ability	http://www.ebi.ac.uk/efo/EFO_0004875
+EFO_0000222	acute myeloid leukemia	http://www.ebi.ac.uk/efo/EFO_0000222
+EFO_0004568	serum non-albumin protein measurement	http://www.ebi.ac.uk/efo/EFO_0004568
+EFO_0004695	intraocular pressure measurement	http://www.ebi.ac.uk/efo/EFO_0004695
+EFO_0004698	insomnia	http://www.ebi.ac.uk/efo/EFO_0004698
+GO_0097366	response to bronchodilator	http://purl.obolibrary.org/obo/GO_0097366
+EFO_0004736	aspartate aminotransferase measurement	http://www.ebi.ac.uk/efo/EFO_0004736
+EFO_0004873	cytokine measurement	http://www.ebi.ac.uk/efo/EFO_0004873
+EFO_0004252	nasopharyngeal neoplasm	http://www.ebi.ac.uk/efo/EFO_0004252
+GO_0031960	response to corticosteroid	http://purl.obolibrary.org/obo/GO_0031960
+HP_0000175	cleft palate	http://purl.obolibrary.org/obo/HP_0000175
+EFO_0005782	age-related hearing impairment	http://www.ebi.ac.uk/efo/EFO_0005782
+Orphanet_282	frontotemporal dementia	http://www.orpha.net/ORDO/Orphanet_282
+EFO_0005658	response to selective serotonin reuptake inhibitor	http://www.ebi.ac.uk/efo/EFO_0005658
+EFO_0005664	blood metabolite measurement	http://www.ebi.ac.uk/efo/EFO_0005664
+EFO_0005665	white matter hyperintensity measurement	http://www.ebi.ac.uk/efo/EFO_0005665
+EFO_0005666	thyroid peroxidase antibody measurement	http://www.ebi.ac.uk/efo/EFO_0005666
+EFO_0005670	smoking initiation	http://www.ebi.ac.uk/efo/EFO_0005670
+EFO_0005671	smoking behaviour measurement	http://www.ebi.ac.uk/efo/EFO_0005671
+EFO_0005674	white matter microstructure measurement	http://www.ebi.ac.uk/efo/EFO_0005674
+EFO_0005677	puberty onset measurement	http://www.ebi.ac.uk/efo/EFO_0005677
+Orphanet_797	sarcoidosis	http://www.orpha.net/ORDO/Orphanet_797
+Orphanet_3389	tuberculosis	http://www.orpha.net/ORDO/Orphanet_3389
+EFO_0004628	insulin like growth factor measurement	http://www.ebi.ac.uk/efo/EFO_0004628
+EFO_0004884	breast size	http://www.ebi.ac.uk/efo/EFO_0004884
+EFO_0004895	Tourette syndrome	http://www.ebi.ac.uk/efo/EFO_0004895
+EFO_0004710	pelvic organ prolapse	http://www.ebi.ac.uk/efo/EFO_0004710
+EFO_0004697	estradiol measurement	http://www.ebi.ac.uk/efo/EFO_0004697
+GO_0007568	aging	http://purl.obolibrary.org/obo/GO_0007568
+GO_0009314	response to radiation	http://purl.obolibrary.org/obo/GO_0009314
+GO_0036270	response to diuretic	http://purl.obolibrary.org/obo/GO_0036270
+GO_0036273	response to statin	http://purl.obolibrary.org/obo/GO_0036273
+GO_0036276	response to antidepressant	http://purl.obolibrary.org/obo/GO_0036276
+GO_0036277	response to anticonvulsant	http://purl.obolibrary.org/obo/GO_0036277
+GO_0042493	response to drug	http://purl.obolibrary.org/obo/GO_0042493
+GO_0097327	response to antineoplastic agent	http://purl.obolibrary.org/obo/GO_0097327
+GO_0097332	response to antipsychotic drug	http://purl.obolibrary.org/obo/GO_0097332
+EFO_0004528	mean corpuscular hemoglobin concentration	http://www.ebi.ac.uk/efo/EFO_0004528
+EFO_0000095	chronic lymphocytic leukemia	http://www.ebi.ac.uk/efo/EFO_0000095
+EFO_0000180	HIV-1 infection	http://www.ebi.ac.uk/efo/EFO_0000180
+EFO_0000195	metabolic syndrome	http://www.ebi.ac.uk/efo/EFO_0000195
+EFO_0000220	acute lymphoblastic leukemia	http://www.ebi.ac.uk/efo/EFO_0000220
+EFO_0000249	Alzheimer's disease	http://www.ebi.ac.uk/efo/EFO_0000249
+EFO_0000253	amyotrophic lateral sclerosis	http://www.ebi.ac.uk/efo/EFO_0000253
+EFO_0000270	asthma	http://www.ebi.ac.uk/efo/EFO_0000270
+EFO_0000274	atopic eczema	http://www.ebi.ac.uk/efo/EFO_0000274
+EFO_0000275	atrial fibrillation	http://www.ebi.ac.uk/efo/EFO_0000275
+EFO_0000289	bipolar disorder	http://www.ebi.ac.uk/efo/EFO_0000289
+EFO_0000305	breast carcinoma	http://www.ebi.ac.uk/efo/EFO_0000305
+EFO_0000319	cardiovascular disease	http://www.ebi.ac.uk/efo/EFO_0000319
+EFO_0000341	chronic obstructive pulmonary disease	http://www.ebi.ac.uk/efo/EFO_0000341
+EFO_0005842	colorectal cancer	http://www.ebi.ac.uk/efo/EFO_0005842
+EFO_0000384	crohn's disease	http://www.ebi.ac.uk/efo/EFO_0000384
+EFO_0000400	diabetes mellitus	http://www.ebi.ac.uk/efo/EFO_0000400
+EFO_0000401	diabetic nephropathy	http://www.ebi.ac.uk/efo/EFO_0000401
+EFO_0000474	epilepsy	http://www.ebi.ac.uk/efo/EFO_0000474
+EFO_0000516	glaucoma	http://www.ebi.ac.uk/efo/EFO_0000516
+EFO_0000537	hypertension	http://www.ebi.ac.uk/efo/EFO_0000537
+EFO_0000571	lung adenocarcinoma	http://www.ebi.ac.uk/efo/EFO_0000571
+EFO_0000612	myocardial infarction	http://www.ebi.ac.uk/efo/EFO_0000612
+EFO_0000621	neuroblastoma	http://www.ebi.ac.uk/efo/EFO_0000621
+EFO_0000649	periodontitis	http://www.ebi.ac.uk/efo/EFO_0000649
+EFO_0000660	polycystic ovary syndrome	http://www.ebi.ac.uk/efo/EFO_0000660
+EFO_0000676	psoriasis	http://www.ebi.ac.uk/efo/EFO_0000676
+EFO_0000677	mental or behavioural disorder	http://www.ebi.ac.uk/efo/EFO_0000677
+EFO_0000685	rheumatoid arthritis	http://www.ebi.ac.uk/efo/EFO_0000685
+EFO_0000692	schizophrenia	http://www.ebi.ac.uk/efo/EFO_0000692
+EFO_0000702	small cell lung carcinoma	http://www.ebi.ac.uk/efo/EFO_0000702
+EFO_0000712	stroke	http://www.ebi.ac.uk/efo/EFO_0000712
+EFO_0005090	basophil count	http://www.ebi.ac.uk/efo/EFO_0005090
+EFO_0000717	systemic scleroderma	http://www.ebi.ac.uk/efo/EFO_0000717
+EFO_0000729	ulcerative colitis	http://www.ebi.ac.uk/efo/EFO_0000729
+EFO_0000731	uterine fibroid	http://www.ebi.ac.uk/efo/EFO_0000731
+EFO_0000756	melanoma	http://www.ebi.ac.uk/efo/EFO_0000756
+EFO_0005054	QRS complex	http://www.ebi.ac.uk/efo/EFO_0005054
+EFO_0006812	autoimmune thyroid disease	http://www.ebi.ac.uk/efo/EFO_0006812
+EFO_0004237	Graves disease	http://www.ebi.ac.uk/efo/EFO_0004237
+EFO_0004766	subcutaneous adipose tissue measurement	http://www.ebi.ac.uk/efo/EFO_0004766
+EFO_0007041	obese body mass index status	http://www.ebi.ac.uk/efo/EFO_0007041
+EFO_0007042	polychlorinated biphenyls measurement	http://www.ebi.ac.uk/efo/EFO_0007042
+EFO_0000638	overall survival	http://www.ebi.ac.uk/efo/EFO_0000638
+EFO_0007117	carotid artery intima media thickness	http://www.ebi.ac.uk/efo/EFO_0007117
+EFO_0006930	brain volume measurement	http://www.ebi.ac.uk/efo/EFO_0006930
+EFO_0004683	wet macular degeneration	http://www.ebi.ac.uk/efo/EFO_0004683
+EFO_0006821	trans fatty acid measurement	http://www.ebi.ac.uk/efo/EFO_0006821
+EFO_0006826	trans/trans-18:2 fatty acid measurement	http://www.ebi.ac.uk/efo/EFO_0006826
+EFO_0006896	glucose homeostasis measurement	http://www.ebi.ac.uk/efo/EFO_0006896
+GO_1903491	response to simvastatin	http://purl.obolibrary.org/obo/GO_1903491
+EFO_0006925	lipoprotein A measurement	http://www.ebi.ac.uk/efo/EFO_0006925
+EFO_0006917	spontaneous preterm birth	http://www.ebi.ac.uk/efo/EFO_0006917
+EFO_0006937	optic disc area measurement	http://www.ebi.ac.uk/efo/EFO_0006937
+EFO_0006939	cup-to-disc ratio measurement	http://www.ebi.ac.uk/efo/EFO_0006939
+EFO_0006940	optic cup area measurement	http://www.ebi.ac.uk/efo/EFO_0006940
+EFO_0006941	grip strength measurement	http://www.ebi.ac.uk/efo/EFO_0006941
+EFO_0006944	systolic blood pressure change measurement	http://www.ebi.ac.uk/efo/EFO_0006944
+EFO_0006945	diastolic blood pressure change measurement	http://www.ebi.ac.uk/efo/EFO_0006945
+EFO_0006946	behavioural disinhibition measurement	http://www.ebi.ac.uk/efo/EFO_0006946
+EFO_0006952	cytotoxicity measurement	http://www.ebi.ac.uk/efo/EFO_0006952
+EFO_1000566	Testicular Germ Cell Tumor	http://www.ebi.ac.uk/efo/EFO_1000566
+EFO_0006953	family history of lung cancer	http://www.ebi.ac.uk/efo/EFO_0006953
+EFO_1000649	estrogen-receptor positive breast cancer	http://www.ebi.ac.uk/efo/EFO_1000649
+EFO_0006995	response to diisocyanate	http://www.ebi.ac.uk/efo/EFO_0006995
+EFO_0007006	depressive symptom measurement	http://www.ebi.ac.uk/efo/EFO_0007006
+EFO_0007009	skin pigmentation measurement	http://www.ebi.ac.uk/efo/EFO_0007009
+EFO_0007014	3-hydroxypropylmercapturic acid measurement	http://www.ebi.ac.uk/efo/EFO_0007014
+EFO_0007015	3-hydroxy-1-methylpropylmercapturic acid measurement	http://www.ebi.ac.uk/efo/EFO_0007015
+EFO_0007614	asthma exacerbation measurement	http://www.ebi.ac.uk/efo/EFO_0007614
+EFO_0007621	bone mineral content measurement	http://www.ebi.ac.uk/efo/EFO_0007621
+EFO_0000389	cutaneous melanoma	http://www.ebi.ac.uk/efo/EFO_0000389
+EFO_0000783	myositis	http://www.ebi.ac.uk/efo/EFO_0000783
+EFO_0000311	cancer	http://www.ebi.ac.uk/efo/EFO_0000311
+EFO_0005140	autoimmune disease	http://www.ebi.ac.uk/efo/EFO_0005140
+EFO_0007700	exploratory eye movement measurement	http://www.ebi.ac.uk/efo/EFO_0007700
+EFO_0007701	spine bone mineral density	http://www.ebi.ac.uk/efo/EFO_0007701
+EFO_0007702	hip bone mineral density	http://www.ebi.ac.uk/efo/EFO_0007702
+EFO_0007707	cerebral amyloid deposition measurement	http://www.ebi.ac.uk/efo/EFO_0007707
+HP_0100543	cognitive impairment	http://purl.obolibrary.org/obo/HP_0100543
+EFO_0007710	cognitive decline measurement	http://www.ebi.ac.uk/efo/EFO_0007710
+EFO_1001486	primary biliary cirrhosis	http://www.ebi.ac.uk/efo/EFO_1001486
+EFO_1001488	influenza A (H1N1)	http://www.ebi.ac.uk/efo/EFO_1001488
+EFO_1001492	atrophic macular degeneration	http://www.ebi.ac.uk/efo/EFO_1001492
+EFO_0007766	response to beta blocker	http://www.ebi.ac.uk/efo/EFO_0007766
+EFO_0007783	mosaic loss of chromosome Y measurement	http://www.ebi.ac.uk/efo/EFO_0007783
+EFO_0007785	femoral neck bone mineral density	http://www.ebi.ac.uk/efo/EFO_0007785
+EFO_0007788	BMI-adjusted waist-hip ratio	http://www.ebi.ac.uk/efo/EFO_0007788
+EFO_0007789	BMI-adjusted waist circumference	http://www.ebi.ac.uk/efo/EFO_0007789
+EFO_0007814	refractive error measurement	http://www.ebi.ac.uk/efo/EFO_0007814
+EFO_0007817	sleep apnea measurement	http://www.ebi.ac.uk/efo/EFO_0007817
+EFO_0007835	alcohol dependence measurement	http://www.ebi.ac.uk/efo/EFO_0007835
+EFO_1001516	ovarian serous carcinoma	http://www.ebi.ac.uk/efo/EFO_1001516
+EFO_0007858	eye morphology measurement	http://www.ebi.ac.uk/efo/EFO_0007858
+EFO_0003948	gastroesophageal reflux disease	http://www.ebi.ac.uk/efo/EFO_0003948
+EFO_0007865	loneliness measurement	http://www.ebi.ac.uk/efo/EFO_0007865
+EFO_0005213	central corneal thickness	http://www.ebi.ac.uk/efo/EFO_0005213
+EFO_0007887	autosomal dominant compelling helio-ophthalmic outburst syndrome	http://www.ebi.ac.uk/efo/EFO_0007887
+EFO_0007626	emphysema imaging measurement	http://www.ebi.ac.uk/efo/EFO_0007626
+EFO_0007660	neuroticism measurement	http://www.ebi.ac.uk/efo/EFO_0007660
+EFO_0007667	lobe attachment	http://www.ebi.ac.uk/efo/EFO_0007667
+HP_0002140	Ischemic stroke	http://purl.obolibrary.org/obo/HP_0002140
+EFO_0007680	gait measurement	http://www.ebi.ac.uk/efo/EFO_0007680
+EFO_0007681	triglyceride change measurement	http://www.ebi.ac.uk/efo/EFO_0007681
+EFO_0007753	seasonal gut microbiome measurement	http://www.ebi.ac.uk/efo/EFO_0007753
+EFO_0007778	urinary albumin to creatinine ratio	http://www.ebi.ac.uk/efo/EFO_0007778
+HP_0012594	Moderate albuminuria	http://purl.obolibrary.org/obo/HP_0012594
+EFO_0007796	parental longevity	http://www.ebi.ac.uk/efo/EFO_0007796
+EFO_0007800	body fat percentage	http://www.ebi.ac.uk/efo/EFO_0007800
+EFO_0007805	HDL cholesterol change measurement	http://www.ebi.ac.uk/efo/EFO_0007805
+EFO_0007806	total cholesterol change measurement	http://www.ebi.ac.uk/efo/EFO_0007806
+EFO_1001512	endometrial carcinoma	http://www.ebi.ac.uk/efo/EFO_1001512
+EFO_0007822	hair colour measurement	http://www.ebi.ac.uk/efo/EFO_0007822
+EFO_0007825	balding measurement	http://www.ebi.ac.uk/efo/EFO_0007825
+EFO_0007828	daytime rest measurement	http://www.ebi.ac.uk/efo/EFO_0007828
+EFO_0000708	squamous cell lung carcinoma	http://www.ebi.ac.uk/efo/EFO_0000708
+EFO_0007841	facial morphology measurement	http://www.ebi.ac.uk/efo/EFO_0007841
+EFO_0007845	lip morphology measurement	http://www.ebi.ac.uk/efo/EFO_0007845
+EFO_0007869	wellbeing measurement	http://www.ebi.ac.uk/efo/EFO_0007869
+EFO_1001870	late-onset Alzheimers disease	http://www.ebi.ac.uk/efo/EFO_1001870
+EFO_0007874	gut microbiome measurement	http://www.ebi.ac.uk/efo/EFO_0007874
+EFO_0007876	insomnia measurement	http://www.ebi.ac.uk/efo/EFO_0007876
+EFO_0007877	risky sexual behaviour measurement	http://www.ebi.ac.uk/efo/EFO_0007877
+EFO_0007878	alcohol consumption measurement	http://www.ebi.ac.uk/efo/EFO_0007878
+EFO_0000764	HIV infection	http://www.ebi.ac.uk/efo/EFO_0000764
+EFO_0007904	susceptibility to childhood ear infection measurement	http://www.ebi.ac.uk/efo/EFO_0007904
+EFO_0007906	synophrys measurement	http://www.ebi.ac.uk/efo/EFO_0007906
+EFO_1001999	systemic juvenile idiopathic arthritis	http://www.ebi.ac.uk/efo/EFO_1001999
+EFO_0007908	traffic air pollution measurement	http://www.ebi.ac.uk/efo/EFO_0007908
+EFO_0007924	tonsillectomy risk measurement	http://www.ebi.ac.uk/efo/EFO_0007924
+EFO_0007978	red blood cell density measurement	http://www.ebi.ac.uk/efo/EFO_0007978
+EFO_0008341	snoring measurement	http://www.ebi.ac.uk/efo/EFO_0008341
+EFO_0008343	sex interaction measurement	http://www.ebi.ac.uk/efo/EFO_0008343
+EFO_0007843	nose morphology measurement	http://www.ebi.ac.uk/efo/EFO_0007843
+EFO_1000650	estrogen-receptor negative breast cancer	http://www.ebi.ac.uk/efo/EFO_1000650
+EFO_0008378	mosquito bite reaction size measurement	http://www.ebi.ac.uk/efo/EFO_0008378
+EFO_0008377	mosquito bite reaction itch intensity measurement	http://www.ebi.ac.uk/efo/EFO_0008377
+EFO_0008375	macula measurement	http://www.ebi.ac.uk/efo/EFO_0008375
+EFO_0008354	cognitive function measurement	http://www.ebi.ac.uk/efo/EFO_0008354
+EFO_0008393	reaction time measurement	http://www.ebi.ac.uk/efo/EFO_0008393
+EFO_0004980	appendicular lean mass	http://www.ebi.ac.uk/efo/EFO_0004980
+EFO_0008401	susceptibility to shingles measurement	http://www.ebi.ac.uk/efo/EFO_0008401
+EFO_0008404	susceptibility to mumps measurement	http://www.ebi.ac.uk/efo/EFO_0008404
+EFO_0008406	susceptibility to plantar warts measurement	http://www.ebi.ac.uk/efo/EFO_0008406
+EFO_0008407	susceptibility to Mycobacterium tuberculosis infection measurement	http://www.ebi.ac.uk/efo/EFO_0008407
+EFO_0008408	susceptibility to strep throat measurement	http://www.ebi.ac.uk/efo/EFO_0008408
+EFO_0008409	susceptibility to scarlet fever measurement	http://www.ebi.ac.uk/efo/EFO_0008409
+EFO_0008410	susceptibility to pneumonia measurement	http://www.ebi.ac.uk/efo/EFO_0008410
+EFO_0008412	susceptibility to vaginal yeast infection measurement	http://www.ebi.ac.uk/efo/EFO_0008412
+EFO_0008413	susceptibility to urinary tract infection measurement	http://www.ebi.ac.uk/efo/EFO_0008413
+EFO_0003931	bone fracture	http://www.ebi.ac.uk/efo/EFO_0003931
+EFO_0008007	age at assessment	http://www.ebi.ac.uk/efo/EFO_0008007
+EFO_1002013	alcoholic pancreatitis	http://www.ebi.ac.uk/efo/EFO_1002013
+EFO_0008039	BMI-adjusted hip circumference	http://www.ebi.ac.uk/efo/EFO_0008039
+EFO_0008056	C-X-C motif chemokine 10 measurement	http://www.ebi.ac.uk/efo/EFO_0008056
+EFO_0008111	diet measurement	http://www.ebi.ac.uk/efo/EFO_0008111
+EFO_0007934	creatinine clearance measurement	http://www.ebi.ac.uk/efo/EFO_0007934
+EFO_0007955	mouth morphology measurement	http://www.ebi.ac.uk/efo/EFO_0007955
+EFO_0007965	response to combination chemotherapy	http://www.ebi.ac.uk/efo/EFO_0007965
+EFO_0007998	cognitive impairment measurement	http://www.ebi.ac.uk/efo/EFO_0007998
+EFO_0008002	physical activity measurement	http://www.ebi.ac.uk/efo/EFO_0008002
+EFO_0008003	heart rate variability measurement	http://www.ebi.ac.uk/efo/EFO_0008003
+EFO_0008006	skin aging measurement	http://www.ebi.ac.uk/efo/EFO_0008006
+EFO_0008205	left ventricular structural measurement	http://www.ebi.ac.uk/efo/EFO_0008205
+EFO_0008219	macrophage inflammatory protein 1b measurement	http://www.ebi.ac.uk/efo/EFO_0008219
+EFO_0008264	platelet-derived growth factor BB measurement	http://www.ebi.ac.uk/efo/EFO_0008264
+EFO_0008292	stem Cell Growth Factor beta measurement	http://www.ebi.ac.uk/efo/EFO_0008292
+EFO_0007925	response to paliperidone	http://www.ebi.ac.uk/efo/EFO_0007925
+EFO_0007927	schizophrenia symptom severity measurement	http://www.ebi.ac.uk/efo/EFO_0007927
+EFO_0007937	blood protein measurement	http://www.ebi.ac.uk/efo/EFO_0007937
+EFO_1002011	adult onset asthma	http://www.ebi.ac.uk/efo/EFO_1002011
+EFO_0007984	platelet component distribution width	http://www.ebi.ac.uk/efo/EFO_0007984
+EFO_0007985	platelet crit	http://www.ebi.ac.uk/efo/EFO_0007985
+EFO_0007986	reticulocyte count	http://www.ebi.ac.uk/efo/EFO_0007986
+EFO_0007987	granulocyte count	http://www.ebi.ac.uk/efo/EFO_0007987
+EFO_0007988	myeloid white cell count	http://www.ebi.ac.uk/efo/EFO_0007988
+EFO_0007989	monocyte percentage of leukocytes	http://www.ebi.ac.uk/efo/EFO_0007989
+EFO_0007990	neutrophil percentage of leukocytes	http://www.ebi.ac.uk/efo/EFO_0007990
+EFO_0007991	eosinophil percentage of leukocytes	http://www.ebi.ac.uk/efo/EFO_0007991
+EFO_0007992	basophil percentage of leukocytes	http://www.ebi.ac.uk/efo/EFO_0007992
+EFO_0007993	lymphocyte percentage of leukocytes	http://www.ebi.ac.uk/efo/EFO_0007993
+EFO_0007994	neutrophil percentage of granulocytes	http://www.ebi.ac.uk/efo/EFO_0007994
+EFO_0007995	basophil percentage of granulocytes	http://www.ebi.ac.uk/efo/EFO_0007995
+EFO_0007996	eosinophil percentage of granulocytes	http://www.ebi.ac.uk/efo/EFO_0007996
+EFO_0007997	granulocyte percentage of myeloid white cells	http://www.ebi.ac.uk/efo/EFO_0007997
+EFO_0008300	TNF-related apoptosis-inducing ligand measurement	http://www.ebi.ac.uk/efo/EFO_0008300
+EFO_0008317	very low density lipoprotein cholesterol measurement	http://www.ebi.ac.uk/efo/EFO_0008317
+EFO_0008328	chronotype measurement	http://www.ebi.ac.uk/efo/EFO_0008328
+EFO_0008336	disease progression measurement	http://www.ebi.ac.uk/efo/EFO_0008336
+EFO_0004615	apolipoprotein B measurement	http://www.ebi.ac.uk/efo/EFO_0004615
+EFO_1000965	Henoch-Schoenlein purpura	http://www.ebi.ac.uk/efo/EFO_1000965
+EFO_0004703	age at menarche	http://www.ebi.ac.uk/efo/EFO_0004703
+EFO_0004748	thyroid stimulating hormone measurement	http://www.ebi.ac.uk/efo/EFO_0004748
+EFO_0005055	QRS duration	http://www.ebi.ac.uk/efo/EFO_0005055
+EFO_0005271	sleep duration	http://www.ebi.ac.uk/efo/EFO_0005271
+EFO_0005301	reading and spelling ability	http://www.ebi.ac.uk/efo/EFO_0005301
+EFO_0005406	colorectal adenoma	http://www.ebi.ac.uk/efo/EFO_0005406
+EFO_0005418	serum dimethylarginine measurement	http://www.ebi.ac.uk/efo/EFO_0005418
+EFO_0005524	large artery stroke	http://www.ebi.ac.uk/efo/EFO_0005524
+EFO_0005530	Trypanosoma cruzi seropositivity	http://www.ebi.ac.uk/efo/EFO_0005530
+EFO_0005653	serum metabolite measurement	http://www.ebi.ac.uk/efo/EFO_0005653
+EFO_0005611	opioid dependence	http://www.ebi.ac.uk/efo/EFO_0005611
+EFO_0008475	mood instability measurement	http://www.ebi.ac.uk/efo/EFO_0008475
+EFO_0008483	response to trauma exposure	http://www.ebi.ac.uk/efo/EFO_0008483
+EFO_1002040	corneal astigmatism	http://www.ebi.ac.uk/efo/EFO_1002040
+EFO_0008579	risk-taking behaviour	http://www.ebi.ac.uk/efo/EFO_0008579
+EFO_0009130	clostridium difficile infection	http://www.ebi.ac.uk/efo/EFO_0009130
+EFO_0009185	heart rate response to recovery post exercise	http://www.ebi.ac.uk/efo/EFO_0009185
+Orphanet_79364	Alopecia	http://www.orpha.net/ORDO/Orphanet_79364
+EFO_0009458	alcohol use disorder measurement	http://www.ebi.ac.uk/efo/EFO_0009458
+EFO_0009589	worry measurement	http://www.ebi.ac.uk/efo/EFO_0009589
+EFO_0009594	irritability measurement	http://www.ebi.ac.uk/efo/EFO_0009594
+EFO_0009598	feeling miserable measurement	http://www.ebi.ac.uk/efo/EFO_0009598
+EFO_0009588	"feeling ""fed-up"" measurement"	http://www.ebi.ac.uk/efo/EFO_0009588
+EFO_0009597	feeling nervous measurement	http://www.ebi.ac.uk/efo/EFO_0009597
+EFO_0009603	stroke outcome severity measurement	http://www.ebi.ac.uk/efo/EFO_0009603
+EFO_0009748	response to ketamine	http://www.ebi.ac.uk/efo/EFO_0009748
+EFO_0009896	anti-thyroglobulin antibody measurement	http://www.ebi.ac.uk/efo/EFO_0009896
+HP_0000155	oral ulcer	http://purl.obolibrary.org/obo/HP_0000155
+EFO_0009902	handedness	http://www.ebi.ac.uk/efo/EFO_0009902
+EFO_0009924	Drugs used in diabetes use measurement	http://www.ebi.ac.uk/efo/EFO_0009924
+EFO_0009928	Diuretic use measurement	http://www.ebi.ac.uk/efo/EFO_0009928
+EFO_0009929	Beta blocking agent use measurement	http://www.ebi.ac.uk/efo/EFO_0009929
+EFO_0009930	Calcium channel blocker use measurement	http://www.ebi.ac.uk/efo/EFO_0009930
+EFO_0009931	Agents acting on the renin-angiotensin system use measurement	http://www.ebi.ac.uk/efo/EFO_0009931
+EFO_0009932	HMG CoA reductase inhibitor use measurement	http://www.ebi.ac.uk/efo/EFO_0009932
+EFO_0009933	Thyroid preparation use measurement	http://www.ebi.ac.uk/efo/EFO_0009933
+EFO_0009941	Inhalant adrenergic use measurement	http://www.ebi.ac.uk/efo/EFO_0009941
+HP_0012664	Reduced ejection fraction	http://purl.obolibrary.org/obo/HP_0012664
+EFO_0009958	response to bisphosphonate	http://www.ebi.ac.uk/efo/EFO_0009958
+EFO_0009960	atypical femoral fracture	http://www.ebi.ac.uk/efo/EFO_0009960
+EFO_0008433	pursuit maintenance gain measurement	http://www.ebi.ac.uk/efo/EFO_0008433
+EFO_0008434	initial pursuit acceleration	http://www.ebi.ac.uk/efo/EFO_0008434
+EFO_0009260	non-melanoma skin carcinoma	http://www.ebi.ac.uk/efo/EFO_0009260
+EFO_1001857	Takayasu arteritis	http://www.ebi.ac.uk/efo/EFO_1001857
+HP_0000964	Eczema	http://purl.obolibrary.org/obo/HP_0000964
+EFO_0000684	respiratory system disease	http://www.ebi.ac.uk/efo/EFO_0000684
+EFO_0009695	household income	http://www.ebi.ac.uk/efo/EFO_0009695
+EFO_0009700	visual perception measurement	http://www.ebi.ac.uk/efo/EFO_0009700
+EFO_0004918	age at diagnosis	http://www.ebi.ac.uk/efo/EFO_0004918
+EFO_0009764	eye colour measurement	http://www.ebi.ac.uk/efo/EFO_0009764
+EFO_0009718	peak expiratory flow	http://www.ebi.ac.uk/efo/EFO_0009718
+EFO_0009767	glycine measurement	http://www.ebi.ac.uk/efo/EFO_0009767
+EFO_0009854	treatment resistant depression	http://www.ebi.ac.uk/efo/EFO_0009854
+EFO_0008460	colorectal health	http://www.ebi.ac.uk/efo/EFO_0008460
+EFO_0008463	glucagon measurement	http://www.ebi.ac.uk/efo/EFO_0008463
+EFO_1000786	osteoarthritis, hip	http://www.ebi.ac.uk/efo/EFO_1000786
+EFO_0008591	free cholesterol measurement	http://www.ebi.ac.uk/efo/EFO_0008591
+EFO_0009180	rosacea severity measurement	http://www.ebi.ac.uk/efo/EFO_0009180
+EFO_0009183	empathy measurement	http://www.ebi.ac.uk/efo/EFO_0009183
+EFO_0009262	nicotine dependence symptom count	http://www.ebi.ac.uk/efo/EFO_0009262
+EFO_0009268	family history of Alzheimer’s disease	http://www.ebi.ac.uk/efo/EFO_0009268
+EFO_0009270	heel bone mineral density	http://www.ebi.ac.uk/efo/EFO_0009270
+EFO_0009278	cranial vault morphology measurement	http://www.ebi.ac.uk/efo/EFO_0009278
+EFO_0009279	response to tenofovir	http://www.ebi.ac.uk/efo/EFO_0009279
+EFO_0009282	sodium measurement	http://www.ebi.ac.uk/efo/EFO_0009282
+EFO_0009331	erosive tooth wear measurement	http://www.ebi.ac.uk/efo/EFO_0009331
+EFO_0009336	velopharyngeal dysfunction	http://www.ebi.ac.uk/efo/EFO_0009336
+EFO_0009366	quality of life during menstruation measurement	http://www.ebi.ac.uk/efo/EFO_0009366
+EFO_0009369	diffusing capacity of the lung for carbon monoxide	http://www.ebi.ac.uk/efo/EFO_0009369
+EFO_0009959	diverticular disease	http://www.ebi.ac.uk/efo/EFO_0009959
+EFO_0010079	corneal endothelial cell measurement	http://www.ebi.ac.uk/efo/EFO_0010079
+EFO_0010176	keratinocyte carcinoma	http://www.ebi.ac.uk/efo/EFO_0010176
+EFO_0010638	atopic asthma	http://www.ebi.ac.uk/efo/EFO_0010638
+EFO_0010723	ocular sarcoidosis	http://www.ebi.ac.uk/efo/EFO_0010723
+EFO_0010724	lifestyle measurement	http://www.ebi.ac.uk/efo/EFO_0010724
+EFO_0010736	cortical surface area measurement	http://www.ebi.ac.uk/efo/EFO_0010736
+EFO_0010750	PHF-tau measurement	http://www.ebi.ac.uk/efo/EFO_0010750
+HP_0100716	Self-injurious behavior	http://purl.obolibrary.org/obo/HP_0100716
+EFO_0009963	bipolar I disorder	http://www.ebi.ac.uk/efo/EFO_0009963
+EFO_0010091	tea consumption measurement	http://www.ebi.ac.uk/efo/EFO_0010091
+EFO_0010092	bitter alcoholic beverage consumption measurement	http://www.ebi.ac.uk/efo/EFO_0010092
+EFO_0010130	health study participation	http://www.ebi.ac.uk/efo/EFO_0010130
+EFO_0010125	viral load	http://www.ebi.ac.uk/efo/EFO_0010125
+GO_0050916	sensory perception of sweet taste	http://purl.obolibrary.org/obo/GO_0050916
+EFO_0009658	adverse effect	http://www.ebi.ac.uk/efo/EFO_0009658
+EFO_0010151	soluble triggering receptor expressed on myeloid cells 2 measurement	http://www.ebi.ac.uk/efo/EFO_0010151
+EFO_0010158	sugar consumption measurement	http://www.ebi.ac.uk/efo/EFO_0010158
+EFO_0010574	epithelial cell adhesion molecule measurement	http://www.ebi.ac.uk/efo/EFO_0010574
+EFO_0010576	liver fibrosis measurement	http://www.ebi.ac.uk/efo/EFO_0010576
+EFO_0010699	diffuse plaque measurement	http://www.ebi.ac.uk/efo/EFO_0010699
+EFO_0010703	trauma exposure measurement	http://www.ebi.ac.uk/efo/EFO_0010703
+MONDO_0002046	alcohol abuse	http://purl.obolibrary.org/obo/MONDO_0002046
+EFO_0011015	educational attainment	http://www.ebi.ac.uk/efo/EFO_0011015
+EFO_0009819	comparative body size at age 10, self-reported	http://www.ebi.ac.uk/efo/EFO_0009819
+EFO_0010700	reticulocyte measurement	http://www.ebi.ac.uk/efo/EFO_0010700
+EFO_0007167	Bell's palsy	http://www.ebi.ac.uk/efo/EFO_0007167
+PATO_0000047	sex	http://purl.obolibrary.org/obo/PATO_0000047
+EFO_0010701	mean reticulocyte volume	http://www.ebi.ac.uk/efo/EFO_0010701
+Orphanet_101953	rare dyslipidemia	http://www.orpha.net/ORDO/Orphanet_101953
+EFO_0009552	hemorrhoid	http://www.ebi.ac.uk/efo/EFO_0009552
