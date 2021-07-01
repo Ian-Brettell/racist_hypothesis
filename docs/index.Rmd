@@ -226,7 +226,7 @@ fst_clumped_df %>%
   dplyr::count(EFO_ID, TRAIT) %>% 
   dplyr::rename(N_SNPS = n) %>% 
   dplyr::arrange(desc(N_SNPS)) %>% 
-  DT::datatable(., options = list(pageLength = 25))
+  DT::datatable(., options = list(pageLength = 10))
 ```
 
 
@@ -344,7 +344,11 @@ target_traits = c("body height",
                   "synophrys measurement",
                   "lip morphology measurement",
                   "squamous cell carcinoma",
-                  "tuberculosis"
+                  "tuberculosis",
+                  "endometrial carcinoma",
+                  "BMI-adjusted hip circumference",
+                  "alcohol dependence measurement",
+                  "loneliness measurement"
                   )
 
 plotly_ecdf_select = fst_clumped_df %>% 
