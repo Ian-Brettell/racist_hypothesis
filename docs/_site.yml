@@ -3,8 +3,10 @@ output_dir: "."
 navbar:
   title: "Fst variation across human traits"
   left:
-    - text: "Analysis"
+    - text: "Fst of all traits in GWAS Catalog"
       href: index.html
+    - text: "20210617 version"
+      href: 20210617_version.html
     - text: "Distribution of trait-increasing alleles"
       href: distribution_of_trait-increasing_alleles.html
 output:

@@ -50,6 +50,9 @@ get_man <- function(df, trait, title, chr, bp, snp, p){
 # Parameters
 #############################
 
+# Import karyoploteR `lighter` and `darker` functions
+
+source("https://gist.githubusercontent.com/brettellebi/c5015ee666cdf8d9f7e25fa3c8063c99/raw/91e601f82da6c614b4983d8afc4ef399fa58ed4b/karyoploteR_lighter_darker.R")
 
 
 target_traits = c("body height",
@@ -149,12 +152,12 @@ names(pal_primary_new) = extended_traits
 # New pal with different shade for each pigmentation trait
 
 pal_primary_new_exp = c("#fc4e07","#ffbf00","#0bc166","#00afbb","#d84797",
-                      karyoploteR::lighter("#360568", amount = 80),
-                      karyoploteR::lighter("#360568", amount = 60),
-                      karyoploteR::lighter("#360568", amount = 40),
-                      karyoploteR::lighter("#360568", amount = 20),
+                      lighter("#360568", amount = 80),
+                      lighter("#360568", amount = 60),
+                      lighter("#360568", amount = 40),
+                      lighter("#360568", amount = 20),
                       "#360568",
-                      karyoploteR::darker("#360568", amount = 20),
+                      darker("#360568", amount = 20),
                       "#4f0943", "#c200fb", "#00647a", "#57C13A", "#f2a918", "#e84141")
 names(pal_primary_new_exp) = target_traits
 

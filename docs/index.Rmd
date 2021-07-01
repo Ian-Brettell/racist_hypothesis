@@ -16,7 +16,10 @@ output:
 #  chunk_output_type: inline
 ---
 
-NOTE: add plotly to R container
+NOTE: add to R container:
+
+* plotly
+* DT: `remotes::install_github('rstudio/DT')`
 
 
 * [Working directory]{color="#4f0943"} on EBI Codon HPC: `/hps/nobackup/birney/users/ian/hmn_fst`
@@ -194,7 +197,7 @@ names(pal_all) = fst_all_df %>%
 
 # SNP counts pre- and post-clumping
 
-```{r}
+```{r, out.width = '150%'}
 snp_count_plot = list("PRE-CLUMP" = fst_all_df,
                       "POST-CLUMP" = fst_clumped_df) %>% 
   dplyr::bind_rows(.id = "FILTER") %>% 
@@ -215,6 +218,17 @@ snp_count_plot = list("PRE-CLUMP" = fst_all_df,
 plotly::ggplotly(snp_count_plot,
                  tooltip = c("TRAIT", "y"))
 ```
+
+## Table of post-clump traits
+
+```{r}
+fst_clumped_df %>% 
+  dplyr::count(EFO_ID, TRAIT) %>% 
+  dplyr::rename(N_SNPS = n) %>% 
+  dplyr::arrange(desc(N_SNPS)) %>% 
+  DT::datatable(., options = list(pageLength = 25))
+```
+
 
 # eCDF for $F_{ST}$
 
@@ -243,8 +257,8 @@ names(pal_clump) = od_clumped_traits
 
 ## Plot all
 
-```{r, fig.height = 30, out.width = '150%'}
-fst_clumped_df %>% 
+```{r, eval = F}
+ecdf_all_faceted = fst_clumped_df %>% 
   dplyr::group_by(EFO_ID) %>%
   # filter for those with >0 SNPs in the clumped dataset
   dplyr::filter(EFO_ID %in% unique(fst_clumped_df$EFO_ID)) %>% 
@@ -252,20 +266,36 @@ fst_clumped_df %>%
   # order
   dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
   ggplot() +
-    stat_ecdf(aes(FST_PEGAS, colour = EFO_ID)) +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
     scale_colour_manual(values = pal_clump) +
     theme_bw() +
     ggtitle("eCDF") +
     facet_wrap(~TRAIT) +
     guides(colour = "none") +
-    theme(strip.text.x = element_text(size = 5))
+    theme(strip.text.x = element_text(size = 4.5))
+
+
+ggsave(here::here("plots/20210701_ecdf_all_faceted.png"),
+       plot = ecdf_all_faceted, 
+       device = "png",
+       width = 30,
+       height = 22,
+       units = "in",
+       dpi = 400)
+
+file.copy(here::here("plots/20210701_ecdf_all_faceted.png"), here::here("docs/plots"),
+          overwrite = T)
+```
+
+```{r, out.width='150%'}
+knitr::include_graphics(here::here("docs/plots/20210701_ecdf_all_faceted.png"))
 ```
 
 ## Plotly
 
 ### All
 
-```{r, out.width = '150%'}
+```{r, out.width = '175%'}
 plotly_ecdf_all = fst_clumped_df %>% 
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
@@ -313,7 +343,8 @@ target_traits = c("body height",
                   "melanoma",
                   "synophrys measurement",
                   "lip morphology measurement",
-                  "squamous cell carcinoma"
+                  "squamous cell carcinoma",
+                  "tuberculosis"
                   )
 
 plotly_ecdf_select = fst_clumped_df %>% 

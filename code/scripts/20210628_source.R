@@ -13,6 +13,7 @@ library(ggridges)
 library(gwasrapidd)
 library(cowplot)
 library(plotly)
+library(DT)
 
 #############################
 # Paths
