@@ -9,6 +9,8 @@ navbar:
       href: 20210617_version.html
     - text: "Distribution of trait-increasing alleles"
       href: distribution_of_trait-increasing_alleles.html
+    - text: "Meeting log"
+      href: meeting_log.html
 output:
   html_document:
     theme: flatly

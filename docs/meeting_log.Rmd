@@ -1,0 +1,34 @@
+---
+title: "Meeting log"
+author: "Ian Brettell"
+date: '`r format(Sys.Date())`'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    dev: 'svg'
+    number_sections: true
+    keep_md: false
+    pandoc_args: --lua-filter=color-text.lua
+    highlight: pygments
+---
+
+# 16 July 2021
+
+## Attendees
+
+* Ewan Birney
+* Aylwyn Scally
+* Ian Brettell
+
+## Notes
+
+* Viral load: what is it? 
+  - Suppression of low $F_{ST}$.
+  - [ACTION]{color = "red"} Studies done in Africa?
+* Expectations re: curve
+  - Take same number of post-clumped SNPs from height as there are for pigmentation, but ranked by p-value. Does it skew in the same way?
+  - Makes sense that stronger SNPs would have a flatter eCDF because they would be adaptive in all environments.
+* [ACTION]{color="red"} Add Covid to analysis. Ewan to find SNPs from latest GWAS.
+* [ACTION]{color="red"} Ian to set up Google Doc for manuscript.
+  

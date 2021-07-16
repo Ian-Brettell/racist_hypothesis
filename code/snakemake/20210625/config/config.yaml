@@ -95,8 +95,6 @@ R:
     "docker://brettellebi/human_traits_fst:R_4.1.0"
 bcftools:
     "docker://quay.io/biocontainers/bcftools:1.10--h5d15f04_0"
-#plink1.9:
-#    "docker://biocontainers/plink1.9:v1.90b3.45-170113-1-deb_cv1"
 plink1.9:
     "docker://biocontainers/plink1.9:v1.90b6.6-181012-1-deb_cv1"
 
