@@ -13,6 +13,11 @@ output:
     highlight: pygments
 ---
 
+NOTE: add to R container:
+
+* plotly
+* DT: `remotes::install_github('rstudio/DT')`
+
 # 16 July 2021
 
 ## Attendees
