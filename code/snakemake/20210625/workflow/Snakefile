@@ -79,7 +79,7 @@ rule all:
 #        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.log"),
 #            date = DATE_OF_COLLECTION,
 #            efo_id = EFO_IDS_FILT
-#        )
+#        ),
 # get_fst
         expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
             date = DATE_OF_COLLECTION,

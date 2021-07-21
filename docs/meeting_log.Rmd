@@ -7,16 +7,27 @@ output:
     toc: true
     toc_float: true
     dev: 'svg'
-    number_sections: true
+    number_sections: false
     keep_md: false
     pandoc_args: --lua-filter=color-text.lua
     highlight: pygments
 ---
 
-NOTE: add to R container:
+```{r, include = F}
+library(here)
+source(here::here("code/scripts/20210628_source.R"))
+```
 
-* plotly
-* DT: `remotes::install_github('rstudio/DT')`
+# 20 July 2021
+
+**Notes on counts**:
+
+* Number of traits in GWAS Catalog (after filtering for `CHEBI:7916`, which threw an error:
+  - **`r readr::read_tsv(here::here("code/snakemake/20210625/config/20210628_all_traits.tsv")) %>% nrow(.)`**
+* Number of traits after filtering for those with at least 50 unique SNP associations:
+  - **`r `readr::read_tsv(here::here("code/snakemake/20210625/config/20210628_filtered_traits.tsv")) %>% nrow(.)`**
+* Number of traits with at least 1 unique SNP association after clumping, with a genome-wide p-value of less than 10e-8:
+  - **`r length(unique(fst_clumped_df$EFO_ID))`**
 
 # 16 July 2021
 
@@ -30,10 +41,10 @@ NOTE: add to R container:
 
 * Viral load: what is it? 
   - Suppression of low $F_{ST}$.
-  - [ACTION]{color = "red"} Studies done in Africa?
+  - [ACTION]{color="red"}: Studies done in Africa?
 * Expectations re: curve
   - Take same number of post-clumped SNPs from height as there are for pigmentation, but ranked by p-value. Does it skew in the same way?
   - Makes sense that stronger SNPs would have a flatter eCDF because they would be adaptive in all environments.
-* [ACTION]{color="red"} Add Covid to analysis. Ewan to find SNPs from latest GWAS.
-* [ACTION]{color="red"} Ian to set up Google Doc for manuscript.
+* [ACTION]{color="red"}: Add Covid to analysis. Ewan to find SNPs from latest GWAS.
+* [ACTION]{color="red"}: Ian to set up Google Doc for manuscript.
   

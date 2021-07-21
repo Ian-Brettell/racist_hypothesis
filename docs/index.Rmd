@@ -16,15 +16,8 @@ output:
 #  chunk_output_type: inline
 ---
 
-NOTE: add to R container:
-
-* plotly
-* DT: `remotes::install_github('rstudio/DT')`
-
-
 * [Working directory]{color="#4f0943"} on EBI Codon HPC: `/hps/nobackup/birney/users/ian/hmn_fst`
 * [GitHub repository]{color="#4f0943"}: <https://github.com/brettellebi/human_traits_fst>
-
 
 # Source libraries, functions and plotting parameters
 
@@ -63,8 +56,6 @@ all_traits_tbl = readr::read_tsv(out_file)
 ```
 
 ## Associations
-
-**NOTE**: This stage is included in the Snakemake process linked below.
 
 ```{r, eval = F}
 #Need to do them sequentially because the GWAS Catalog can't handle dozens (let alone thousands) of simultaneous queries.
@@ -163,7 +154,7 @@ clumped_files = list.files(file.path(target_dir, "plink/clumped"), pattern = "*.
 clumped = lapply(clumped_files, function(FILE){
   readr::read_delim(FILE,
                     delim = " ",
-                    col_types = "i-c---------",
+                    col_types = "i-c-d-------",
                     trim_ws = T)
 })
 names(clumped) = stringr::str_remove(basename(clumped_files), ".clumped")
@@ -185,7 +176,7 @@ fst_clumped_df = fst_clumped %>%
 
 ```
 
-## Add palette based on post-clump SNP count
+## Add palette based on pre-clump SNP count
 
 ```{r}
 pal_all = turbo(n = length(unique(fst_all_df$EFO_ID)))
@@ -351,15 +342,15 @@ target_traits = c("body height",
                   "loneliness measurement"
                   )
 
-plotly_ecdf_select = fst_clumped_df %>% 
+plotly_ecdf_select = fst_clumped_df %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
-  dplyr::group_by(EFO_ID) %>%
-  # filter for those with >0 SNPs in the clumped dataset
-  dplyr::filter(EFO_ID %in% unique(fst_clumped_df$EFO_ID)) %>% 
-  # filter for `target_traits`
-  dplyr::filter(TRAIT %in% target_traits) %>% 
-  dplyr::ungroup() %>% 
   # order
   dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
   ggplot() +
@@ -374,5 +365,161 @@ plotly::ggplotly(plotly_ecdf_select,
                  tooltip = c("TRAIT"))
 ```
 
+# Extract same number of top SNPs for selected traits as `skin pigmentation`
 
+To check whether the distribution changes if you only have a few SNPs with presumably the highest effect sizes.
+
+```{r}
+# How many unique SNPs for each trait
+fst_clumped_df %>% 
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(SNP_COUNT = n_distinct(SNP)) %>% 
+  DT::datatable(.)
+
+# Get highest number of SNPs of the pigmentation traits
+max_n_snps = fst_clumped_df %>% 
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(SNP_COUNT = n_distinct(SNP)) %>% 
+  dplyr::filter(TRAIT %in% c("skin pigmentation measurement", "skin pigmentation", "eye colour measurement")) %>% 
+  dplyr::pull(SNP_COUNT) %>% 
+  max(.)
+
+# Get EFO IDs for target traits
+target_efo_ids = fst_clumped_df %>% 
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  dplyr::distinct(EFO_ID) %>% 
+  dplyr::pull(EFO_ID)
+
+# Filter `clumped` for `target_traits` and then pull out the top `max_n_snps` for each trait
+clumped_red = clumped[names(clumped) %in% target_efo_ids] %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  dplyr::arrange(EFO_ID, P) %>% 
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::slice_head(n = max_n_snps) %>% 
+  split(., f = .$EFO_ID)
+
+# Filter `fst_all` for clumped SNPs
+fst_clumped_red = fst_all[names(fst_all) %in% target_efo_ids]
+clumped_red_names = names(fst_clumped_red)
+fst_clumped_red = lapply(names(fst_clumped_red), function(TRAIT_ID){
+    fst_all[[TRAIT_ID]] %>% 
+      dplyr::filter(SNP %in% clumped_red[[TRAIT_ID]]$SNP)
+})
+names(fst_clumped_red) = clumped_red_names
+# Bind into DF
+fst_clumped_df_red = fst_clumped_red %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  dplyr::left_join(all_traits_tbl %>% 
+                     dplyr::select(EFO_ID = efo_id,
+                                   TRAIT = trait),
+                   by = "EFO_ID")
+
+# Plot
+plotly_ecdf_select_2 = fst_clumped_df_red %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = pal_clump) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5))
+
+plotly::ggplotly(plotly_ecdf_select_2,
+                 tooltip = c("TRAIT"))
+```
+
+# Were the HIV and viral load studies carried out in African populations?
+
+```{r}
+# Get studies
+hiv_traits = c("viral load", "HIV-1 infection")
+hiv_efo_ids = all_traits_tbl %>% 
+  dplyr::filter(trait %in% hiv_traits)
+assocs_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd/20210628/associations_raw"
+hiv_studies = lapply(hiv_efo_ids$efo_id, function(HIV_EFO){
+  out = list()
+  # read in associations
+  out[["ASSOCS"]] = readRDS(file.path(assocs_dir, paste(HIV_EFO, ".rds", sep = "")))
+  out[["KEY"]] = gwasrapidd::association_to_study(unique(out[["ASSOCS"]]@associations$association_id))
+  out[["STUDIES"]] = gwasrapidd::get_studies(study_id = unique(out[["KEY"]]$study_id))
+  return(out)
+})
+names(hiv_studies) = hiv_efo_ids$trait
+
+# Print studies
+hiv_out = purrr::map(hiv_studies, function(HIV_TRAIT){
+  HIV_TRAIT[["STUDIES"]]@studies %>% 
+    dplyr::distinct(study_id,
+                    initial_sample_size,
+                    replication_sample_size) %>% 
+    dplyr::left_join(HIV_TRAIT[["STUDIES"]]@publications %>% 
+                       dplyr::select(study_id, title),
+                     by = "study_id") %>% 
+    dplyr::select(study_id, title, initial_sample_size, replication_sample_size)
+})
+ 
+# HIV-1 infection
+DT::datatable(hiv_out$`HIV-1 infection`)
+
+# Viral load
+DT::datatable(hiv_out$`viral load`)
+```
+
+# Final ridges figure
+
+```{r, fig.dim=c(8,20)}
+fst_clumped_df %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(names(pal_clump)))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+    geom_density_ridges(scale = 2,
+                        bandwidth = 0.003,
+                        calc_ecdf = TRUE,
+                        quantiles = c(0.5, 0.9),
+                        quantile_lines = T,
+                        jittered_points = T,
+                        point_shape = '|', alpha = 0.85, point_size = 2,
+                        position = position_points_jitter(height = 0),
+                        ) +
+    scale_fill_manual(values = pal_clump) +
+    scale_colour_manual(values = darker(pal_clump)) +
+    guides(fill = "none", colour = "none") +
+    theme_bw() +
+    scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+    xlab(expression(italic(F[ST]))) +
+    ylab(NULL)
+  
+```
+
+```{r, eval = F}
+width = 8
+height = 20
+
+ggsave(here::here("docs/plots/20210721_ridges.png"),
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20210721_ridges.svg"),
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
 

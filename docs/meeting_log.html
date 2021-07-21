@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ian Brettell" />
 
-<meta name="date" content="2021-07-16" />
+<meta name="date" content="2021-07-21" />
 
 <title>Meeting log</title>
 
@@ -333,41 +333,54 @@ div.tocify {
 
 <h1 class="title toc-ignore">Meeting log</h1>
 <h4 class="author">Ian Brettell</h4>
-<h4 class="date">2021-07-16</h4>
+<h4 class="date">2021-07-21</h4>
 
 </div>
 
 
-<p>NOTE: add to R container:</p>
+<div id="july-2021" class="section level1">
+<h1>20 July 2021</h1>
+<p><strong>Notes on counts</strong>:</p>
 <ul>
-<li>plotly</li>
-<li>DT: <code>remotes::install_github('rstudio/DT')</code></li>
+<li>Number of traits in GWAS Catalog (after filtering for <code>CHEBI:7916</code>, which threw an error:
+<ul>
+<li><strong>3437</strong></li>
+</ul></li>
+<li>Number of traits after filtering for those with at least 50 unique SNP associations:
+<ul>
+<li><strong><code>r</code>readr::read_tsv(here::here(“code/snakemake/20210625/config/20210628_filtered_traits.tsv”)) %&gt;% nrow(.)`</strong></li>
+</ul></li>
+<li>Number of traits with at least 1 unique SNP association after clumping, with a genome-wide p-value of less than 10e-8:
+<ul>
+<li><strong>539</strong></li>
+</ul></li>
 </ul>
-<div id="july-2021" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> 16 July 2021</h1>
-<div id="attendees" class="section level2" number="1.1">
-<h2 number="1.1"><span class="header-section-number">1.1</span> Attendees</h2>
+</div>
+<div id="july-2021-1" class="section level1">
+<h1>16 July 2021</h1>
+<div id="attendees" class="section level2">
+<h2>Attendees</h2>
 <ul>
 <li>Ewan Birney</li>
 <li>Aylwyn Scally</li>
 <li>Ian Brettell</li>
 </ul>
 </div>
-<div id="notes" class="section level2" number="1.2">
-<h2 number="1.2"><span class="header-section-number">1.2</span> Notes</h2>
+<div id="notes" class="section level2">
+<h2>Notes</h2>
 <ul>
 <li>Viral load: what is it?
 <ul>
 <li>Suppression of low <span class="math inline">\(F_{ST}\)</span>.</li>
-<li>[ACTION]{color = “red”} Studies done in Africa?</li>
+<li><span style="color: red;">ACTION</span>: Studies done in Africa?</li>
 </ul></li>
 <li>Expectations re: curve
 <ul>
 <li>Take same number of post-clumped SNPs from height as there are for pigmentation, but ranked by p-value. Does it skew in the same way?</li>
 <li>Makes sense that stronger SNPs would have a flatter eCDF because they would be adaptive in all environments.</li>
 </ul></li>
-<li><span style="color: red;">ACTION</span> Add Covid to analysis. Ewan to find SNPs from latest GWAS.</li>
-<li><span style="color: red;">ACTION</span> Ian to set up Google Doc for manuscript.</li>
+<li><span style="color: red;">ACTION</span>: Add Covid to analysis. Ewan to find SNPs from latest GWAS.</li>
+<li><span style="color: red;">ACTION</span>: Ian to set up Google Doc for manuscript.</li>
 </ul>
 </div>
 </div>
