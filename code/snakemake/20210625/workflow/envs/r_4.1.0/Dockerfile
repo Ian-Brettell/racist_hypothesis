@@ -20,7 +20,8 @@ RUN install2.r --error \
     cowplot \
     remotes \
     plotly \
-    DT
+    DT \
+    svglite
 
 # Install `gwasrapidd`
 RUN R -e "remotes::install_github('ramiromagno/gwasrapidd')"
