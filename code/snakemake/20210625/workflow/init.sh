@@ -28,3 +28,5 @@ singularity shell --bind /hps/software/users/birney/ian/rstudio_db:/var/lib/rstu
 """
 # Then run rserver, setting path of config file containing library path
 rserver --rsession-config-file /hps/software/users/birney/ian/repos/human_traits_fst/code/snakemake/20210625/workflow/envs/rstudio_server/rsession.conf
+
+ssh -L 8787:hl-codon-44-04:8787 proxy-codon
