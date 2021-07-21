@@ -369,7 +369,7 @@ plotly::ggplotly(plotly_ecdf_select,
 
 To check whether the distribution changes if you only have a few SNPs with presumably the highest effect sizes.
 
-```{r}
+```{r, out.width='150%'}
 # How many unique SNPs for each trait
 fst_clumped_df %>% 
   dplyr::filter(TRAIT %in% target_traits) %>% 
