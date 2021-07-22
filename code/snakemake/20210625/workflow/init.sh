@@ -20,12 +20,12 @@ snakemake \
 # For R
 
 ssh proxy-codon
-bsub -M 20000 -Is """
+module load singularity-3.7.0-gcc-9.3.0-dp5ffrp
+bsub -M 20000 -Is bash
 singularity shell --bind /hps/software/users/birney/ian/rstudio_db:/var/lib/rstudio-server \
                   --bind /hps/software/users/birney/ian/tmp:/tmp \
                   --bind /hps/software/users/birney/ian/run:/run \
                   docker://brettellebi/human_traits_fst:R_4.1.0
-"""
 # Then run rserver, setting path of config file containing library path
 rserver --rsession-config-file /hps/software/users/birney/ian/repos/human_traits_fst/code/snakemake/20210625/workflow/envs/rstudio_server/rsession.conf
 

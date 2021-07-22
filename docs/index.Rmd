@@ -204,11 +204,32 @@ snp_count_plot = list("PRE-CLUMP" = fst_all_df,
           axis.ticks.x = element_blank()) +
     ylab("N LOCI") +
     facet_wrap(~FILTER, nrow = 2) +
-    guides(FILL = "none")
+    guides(fill = "none")
 
 plotly::ggplotly(snp_count_plot,
                  tooltip = c("TRAIT", "y"))
 ```
+
+```{r, eval = F}
+width = 12
+height = 10
+
+ggsave(here::here("docs/plots/20210722_snp_counts.png"),
+       plot = snp_count_plot,
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20210722_snp_counts.svg"),
+       plot = snp_count_plot,
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
+
 
 ## Table of post-clump traits
 
@@ -266,16 +287,13 @@ ecdf_all_faceted = fst_clumped_df %>%
     theme(strip.text.x = element_text(size = 4.5))
 
 
-ggsave(here::here("plots/20210701_ecdf_all_faceted.png"),
+ggsave(here::here("docs/plots/20210701_ecdf_all_faceted.png"),
        plot = ecdf_all_faceted, 
        device = "png",
        width = 30,
        height = 22,
        units = "in",
        dpi = 400)
-
-file.copy(here::here("plots/20210701_ecdf_all_faceted.png"), here::here("docs/plots"),
-          overwrite = T)
 ```
 
 ```{r, out.width='150%'}
@@ -326,7 +344,7 @@ target_traits = c("body height",
                   "coronary artery disease",
                   "mortality",
                   "longevity",
-                  "schziophrenia",
+                  "schizophrenia",
                   "skin pigmentation",
                   "skin pigmentation measurement",
                   "eye colour measurement",
@@ -472,10 +490,12 @@ DT::datatable(hiv_out$`HIV-1 infection`)
 DT::datatable(hiv_out$`viral load`)
 ```
 
-# Final ridges figure
+# Final figures
+
+## Ridges
 
 ```{r, fig.dim=c(8,20)}
-fst_clumped_df %>% 
+ridges_plot = fst_clumped_df %>% 
   # filter for `target_traits`
   dplyr::filter(TRAIT %in% target_traits) %>% 
   # group by trait to take unique SNPs
@@ -502,7 +522,8 @@ fst_clumped_df %>%
     scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
     xlab(expression(italic(F[ST]))) +
     ylab(NULL)
-  
+
+ridges_plot
 ```
 
 ```{r, eval = F}
@@ -517,6 +538,92 @@ ggsave(here::here("docs/plots/20210721_ridges.png"),
        dpi= 400)
 
 ggsave(here::here("docs/plots/20210721_ridges.svg"),
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
+
+## eCDF plot faceted
+
+```{r}
+ecdf_plot_face = fst_clumped_df %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = pal_clump) +
+    theme_bw() +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT, nrow = 7, ncol = 4)
+
+ecdf_plot_face
+```
+
+```{r}
+ecdf_plot_all = fst_clumped_df %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_clump)[names(pal_clump) %in% target_traits])) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = pal_clump) +
+    theme_bw() +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability")
+
+ecdf_plot_all
+```
+
+## Compile
+
+```{r}
+final_figure = cowplot::ggdraw() +
+  draw_plot(ridges_plot,
+            x = 0, y = 0, width = .5, height = 1) +
+  draw_plot(ecdf_plot_all,
+            x = .5, y = .65, width = .5, height = .35) +
+  draw_plot(ecdf_plot_face,
+            x = .5, y = 0, width = .5, height = .65) +
+  draw_plot_label(label = c("A", "B", "C"), size = 25,
+                  x = c(0, .5, .5), y = c(1, 1, .65),
+                  hjust = c(-.15, .15, .15),
+                  color = "#37323E")
+
+final_figure
+```
+```{r, eval = F}
+width = 12
+height = 12
+
+ggsave(here::here("docs/plots/20210721_final.png"),
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20210721_final.svg"),
        device = "svg",
        width = width,
        height = height,
