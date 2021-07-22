@@ -518,7 +518,7 @@ ridges_plot = fst_clumped_df %>%
     scale_fill_manual(values = pal_clump) +
     scale_colour_manual(values = darker(pal_clump)) +
     guides(fill = "none", colour = "none") +
-    theme_bw() +
+    theme_cowplot() +
     scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
     xlab(expression(italic(F[ST]))) +
     ylab(NULL)
@@ -561,7 +561,7 @@ ecdf_plot_face = fst_clumped_df %>%
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
     scale_colour_manual(values = pal_clump) +
-    theme_bw() +
+    theme_cowplot() +
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 5)) +
     xlab(expression(italic(F[ST]))) +
@@ -586,7 +586,7 @@ ecdf_plot_all = fst_clumped_df %>%
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
     scale_colour_manual(values = pal_clump) +
-    theme_bw() +
+    theme_cowplot() +
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 5)) +
     xlab(expression(italic(F[ST]))) +
