@@ -561,12 +561,12 @@ ecdf_plot_face = fst_clumped_df %>%
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
     scale_colour_manual(values = pal_clump) +
-    theme_cowplot() +
+    theme_cowplot(rel_small = 9/14) +
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 5)) +
     xlab(expression(italic(F[ST]))) +
     ylab("Cumulative Probability") +
-    facet_wrap(~TRAIT, nrow = 7, ncol = 4)
+    facet_wrap(~TRAIT, nrow = 7, ncol = 4) 
 
 ecdf_plot_face
 ```
@@ -601,12 +601,12 @@ ecdf_plot_all
 final_figure = cowplot::ggdraw() +
   draw_plot(ridges_plot,
             x = 0, y = 0, width = .5, height = 1) +
-  draw_plot(ecdf_plot_all,
-            x = .5, y = .65, width = .5, height = .35) +
   draw_plot(ecdf_plot_face,
-            x = .5, y = 0, width = .5, height = .65) +
+            x = .5, y = 0.35, width = .5, height = .65) +
+  draw_plot(ecdf_plot_all,
+            x = .5, y = 0, width = .5, height = .35) +
   draw_plot_label(label = c("A", "B", "C"), size = 25,
-                  x = c(0, .5, .5), y = c(1, 1, .65),
+                  x = c(0, .5, .5), y = c(1, 1, .35),
                   hjust = c(-.15, .15, .15),
                   color = "#37323E")
 
