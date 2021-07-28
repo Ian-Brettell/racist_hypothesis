@@ -1,6 +1,0 @@
-hub test_hub
-shortLabel test_hub
-longLabel test_hub
-genomesFile genomes.txt
-email user@domain.com
-descriptionUrl http://www.somedomain.com/articles/h19

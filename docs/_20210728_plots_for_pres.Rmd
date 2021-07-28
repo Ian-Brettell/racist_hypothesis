@@ -206,6 +206,19 @@ snp_count_plot = list("PRE-CLUMP" = fst_all_df,
   facet_wrap(~FILTER, nrow = 2) +
   guides(fill = "none")
 
+ggsave(here::here("docs/plots/20210728_snp_counts.png"),
+       plot = snp_count_plot,
+       device = "png",
+       width = 19,
+       height = 14,
+       units = "in",
+       dpi= 400)
+
+snp_count_ggplotly = plotly::ggplotly(snp_count_plot,
+                 tooltip = c("TRAIT", "y"))
+
+api_create(snp_count_ggplotly, filename = "snp_count_test")
+
 plotly::ggplotly(snp_count_plot,
                  tooltip = c("TRAIT", "y"))
 ```
@@ -294,6 +307,14 @@ ggsave(here::here("docs/plots/20210701_ecdf_all_faceted.png"),
        height = 22,
        units = "in",
        dpi = 400)
+
+ggsave(here::here("docs/plots/20210728_ecdf_all_faceted.png"),
+       plot = ecdf_all_faceted, 
+       device = "png",
+       width = 31,
+       height = 13,
+       units = "in",
+       dpi = 400)
 ```
 
 ```{r, out.width='150%'}
@@ -321,6 +342,14 @@ plotly_ecdf_all = fst_clumped_df %>%
   ggtitle("eCDF") +
   guides(colour = "none") +
   theme(strip.text.x = element_text(size = 5))
+
+ggsave(here::here("docs/plots/20210728_ecdf_all.png"),
+       plot = plotly_ecdf_all, 
+       device = "png",
+       width = 25,
+       height = 14,
+       units = "in",
+       dpi = 400)
 
 plotly::ggplotly(plotly_ecdf_all,
                  tooltip = c("TRAIT"))
@@ -379,9 +408,39 @@ plotly_ecdf_select = fst_clumped_df %>%
   guides(colour = "none") +
   theme(strip.text.x = element_text(size = 5))
 
+ggsave(here::here("docs/plots/20210728_ecdf_select.png"),
+       plot = plotly_ecdf_select, 
+       device = "png",
+       width = 15,
+       height = 13,
+       units = "in",
+       dpi = 400)
+
 plotly::ggplotly(plotly_ecdf_select,
                  tooltip = c("TRAIT"))
 ```
+
+```{r}
+plotly_ecdf_selection = fst_clumped_df %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  ggplot() +
+  stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+  scale_colour_manual(values = pal_clump) +
+  theme_bw() +
+  ggtitle("eCDF") +
+  guides(colour = "none") +
+  theme(strip.text.x = element_text(size = 5))
+```
+
 
 # Extract same number of top SNPs for selected traits as `skin pigmentation`
 
@@ -448,6 +507,14 @@ plotly_ecdf_select_2 = fst_clumped_df_red %>%
   ggtitle("eCDF") +
   guides(colour = "none") +
   theme(strip.text.x = element_text(size = 5))
+
+ggsave(here::here("docs/plots/20210728_ecdf_select_2.png"),
+       plot = plotly_ecdf_select_2, 
+       device = "png",
+       width = 15,
+       height = 13,
+       units = "in",
+       dpi = 400)
 
 plotly::ggplotly(plotly_ecdf_select_2,
                  tooltip = c("TRAIT"))
@@ -524,6 +591,132 @@ ridges_plot = fst_clumped_df %>%
   ylab(NULL)
 
 ridges_plot
+```
+
+```{r}
+target_traits = c("body height", "body mass index", "self reported educational attainment", "mathematical ability", "intelligence", "asthma", "coronary artery disease")
+
+ridges_plot = fst_clumped_df %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(target_traits))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+  geom_density_ridges(scale = 2,
+                      bandwidth = 0.003,
+                      calc_ecdf = TRUE,
+                      quantiles = c(0.5, 0.9),
+                      quantile_lines = T,
+                      jittered_points = T,
+                      point_shape = '|', alpha = 0.85, point_size = 2,
+                      position = position_points_jitter(height = 0),
+  ) +
+  scale_fill_manual(values = pal_clump) +
+  scale_colour_manual(values = darker(pal_clump)) +
+  guides(fill = "none", colour = "none") +
+  theme_cowplot() +
+  scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+  xlab(expression(italic(F[ST]))) +
+  ylab(NULL)
+
+ridges_plot
+
+ggsave(here::here("docs/plots/20210728_ridges_high_N.png"),
+       plot = ridges_plot,
+       device = "png",
+       width = 10,
+       height = 13,
+       units = "in",
+       dpi= 400)
+```
+
+```{r}
+target_traits = c("body height", "body mass index", "self reported educational attainment", "mathematical ability", "intelligence", "asthma", "coronary artery disease", "HIV-1 infection", "viral load")
+
+ridges_plot = fst_clumped_df %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(target_traits))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+  geom_density_ridges(scale = 2,
+                      bandwidth = 0.003,
+                      calc_ecdf = TRUE,
+                      quantiles = c(0.5, 0.9),
+                      quantile_lines = T,
+                      jittered_points = T,
+                      point_shape = '|', alpha = 0.85, point_size = 2,
+                      position = position_points_jitter(height = 0),
+  ) +
+  scale_fill_manual(values = pal_clump) +
+  scale_colour_manual(values = darker(pal_clump)) +
+  guides(fill = "none", colour = "none") +
+  theme_cowplot() +
+  scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+  xlab(expression(italic(F[ST]))) +
+  ylab(NULL)
+
+ridges_plot
+
+ggsave(here::here("docs/plots/20210728_ridges_high_and_med_N.png"),
+       plot = ridges_plot,
+       device = "png",
+       width = 10,
+       height = 13,
+       units = "in",
+       dpi= 400)
+```
+
+```{r}
+target_traits = c("body height", "body mass index", "self reported educational attainment", "mathematical ability", "intelligence", "asthma", "coronary artery disease", "HIV-1 infection", "viral load", "heart failure","mortality", "longevity", "loneliness measurement", "skin pigmentation", "skin pigmentation measurement", "alcohol dependence measurement", "eye colour measurement", "lip morphology measurement")
+
+ridges_plot = fst_clumped_df %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(target_traits))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+  geom_density_ridges(scale = 2,
+                      bandwidth = 0.003,
+                      calc_ecdf = TRUE,
+                      quantiles = c(0.5, 0.9),
+                      quantile_lines = T,
+                      jittered_points = T,
+                      point_shape = '|', alpha = 0.85, point_size = 2,
+                      position = position_points_jitter(height = 0),
+  ) +
+  scale_fill_manual(values = pal_clump) +
+  scale_colour_manual(values = darker(pal_clump)) +
+  guides(fill = "none", colour = "none") +
+  theme_cowplot() +
+  scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+  xlab(expression(italic(F[ST]))) +
+  ylab(NULL)
+
+ridges_plot
+
+ggsave(here::here("docs/plots/20210728_ridges_all.png"),
+       plot = ridges_plot,
+       device = "png",
+       width = 10,
+       height = 13,
+       units = "in",
+       dpi= 400)
 ```
 
 ```{r, eval = F}
