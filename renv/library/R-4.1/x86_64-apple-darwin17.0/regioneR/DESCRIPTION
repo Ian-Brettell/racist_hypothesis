@@ -1,0 +1,31 @@
+Package: regioneR
+Type: Package
+Title: Association analysis of genomic regions based on permutation
+        tests
+Version: 1.24.0
+Date: 2018-08-14
+Author: Anna Diez-Villanueva <adiez@iconcologia.net>, Roberto Malinverni
+    <rmalinverni@carrerasresearch.org> and Bernat Gel <bgel@igtp.cat>
+Maintainer: Bernat Gel <bgel@imppc.org>
+Description: regioneR offers a statistical framework based on
+    customizable permutation tests to assess the association
+    between genomic region sets and other genomic features.
+License: Artistic-2.0
+Depends: GenomicRanges
+Imports: memoise, GenomicRanges, IRanges, BSgenome, Biostrings,
+        rtracklayer, parallel, graphics, stats, utils, methods,
+        GenomeInfoDb, S4Vectors, tools
+Suggests: BiocStyle, knitr, BSgenome.Hsapiens.UCSC.hg19.masked,
+        testthat
+VignetteBuilder: knitr
+Encoding: UTF-8
+biocViews: Genetics, ChIPSeq, DNASeq, MethylSeq, CopyNumberVariation
+NeedsCompilation: no
+RoxygenNote: 6.1.1
+git_url: https://git.bioconductor.org/packages/regioneR
+git_branch: RELEASE_3_13
+git_last_commit: 3cbcdab
+git_last_commit_date: 2021-05-19
+Date/Publication: 2021-05-19
+Packaged: 2021-05-20 01:59:46 UTC; biocbuild
+Built: R 4.1.0; ; 2021-05-20 15:08:43 UTC; unix

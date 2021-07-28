@@ -1,0 +1,6 @@
+CountSignals-class      Container for count signals
+as.list.CountSignals    Converts the container to a list 'l' such that
+                        'l[[i]]' is the i-th signal.
+bamsignals              Efficient counting of reads in a bam file
+bamsignals-methods      Functions for extracting count signals from a
+                        bam file.

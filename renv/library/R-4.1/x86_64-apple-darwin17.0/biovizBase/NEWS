@@ -1,0 +1,34 @@
+CHANGES IN VERSION 1.19.1
+-------------------------
+
+NEW FEATURES
+
+    o crunch method supports now EnsDb objects and related filter objects.
+
+
+CHANGES IN VERSION 1.3.8
+------------------------
+
+NEW FEATURES
+
+    o transform utils
+    o adding label/scale utils
+
+Bug fixing
+
+    o fix warning
+    o fix bugs in circular view
+
+
+CHANGES IN VERSION 1.1.16
+------------------------
+
+NEW FEATURES
+
+    o addSteping add extra arugments group.selfish to control stepping method
+
+    o add estimateCoverage method for fast estimate coverage
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o addStepings rename to addStepping
