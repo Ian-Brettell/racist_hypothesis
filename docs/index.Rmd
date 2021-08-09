@@ -32,7 +32,7 @@ source(here::here("code/scripts/20210628_source.R"))
 ## Traits
 
 ```{r, eval = F}
-date_of_collection = "20210628"
+date_of_collection = "20210809"
 long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
 out_file = here::here("code/snakemake/20210625/config",
                       paste(date_of_collection, "_all_traits.tsv", sep = ""))
@@ -48,7 +48,7 @@ all_traits_tbl = all_traits@traits %>%
 ```
 
 ```{r, include = F}
-date_of_collection = "20210628"
+date_of_collection = "20210809"
 out_file = here::here("code/snakemake/20210625/config",
                       paste(date_of_collection, "_all_traits.tsv", sep = ""))
 
@@ -59,17 +59,21 @@ all_traits_tbl = readr::read_tsv(out_file)
 
 ```{r, eval = F}
 #Need to do them sequentially because the GWAS Catalog can't handle dozens (let alone thousands) of simultaneous queries.
-date_of_collection = "20210628"
+date_of_collection = "20210809"
 long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
 
+# create output dir
+out_dir = file.path(long_term_dir,
+                    date_of_collection,
+                    "associations_raw")
+dir.create(out_dir, recursive = T)
 
+# Get associations
 counter = 0
-lapply(all_traits@traits$efo_id, function(EFO_ID) {
+lapply(all_traits_tbl$efo_id, function(EFO_ID) {
   counter <<- counter + 1
   # set output file name
-  out_path = file.path(long_term_dir,
-                       date_of_collection,
-                       "associations_raw",
+  out_path = file.path(out_dir,
                        paste(EFO_ID, ".rds", sep = ""))
   # if output file doesn't already exist, get associations and save
   if (!file.exists(out_path)){
@@ -78,14 +82,13 @@ lapply(all_traits@traits$efo_id, function(EFO_ID) {
   } else {
     print(paste(counter, ". ", EFO_ID, ": File already exists.", sep = ""))
   }
-  # save
 })
 ```
 
 ## Read in associations and filter for those with more than 50 unique SNPs
 
 ```{r, eval = F}
-date_of_collection = "20210628"
+date_of_collection = "20210809"
 long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
 out_file = here::here("code/snakemake/20210625/config",
                       paste(date_of_collection, "_filtered_traits.tsv", sep = ""))
@@ -105,6 +108,10 @@ filt_assocs = all_assocs %>%
     length(unique(EFO_ID@risk_alleles$variant_id)) >= 50
   })
 
+# add COVID-19
+covid_id = all_traits_tbl$efo_id[all_traits_tbl$trait == "COVID-19"]
+filt_assocs[[covid_id]] = all_assocs[[covid_id]]
+
 # Filter `all_traits_tbl` for those traits and save to file
 filt_traits_tbl = all_traits_tbl %>% 
   dplyr::filter(efo_id %in% names(filt_assocs)) %>% 
@@ -112,7 +119,7 @@ filt_traits_tbl = all_traits_tbl %>%
 ```
 
 ```{r, include = F}
-date_of_collection = "20210628"
+date_of_collection = "20210809"
 out_file = here::here("code/snakemake/20210625/config",
                       paste(date_of_collection, "_filtered_traits.tsv", sep = ""))
 

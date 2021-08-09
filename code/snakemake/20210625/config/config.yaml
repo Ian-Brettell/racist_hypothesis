@@ -1,52 +1,62 @@
+#####################
+# Locations
+#####################
 working_dir:
-    "/hps/nobackup/birney/users/ian/hmn_fst"
+    /hps/nobackup/birney/users/ian/hmn_fst
 lts_dir:
-    "/nfs/research/birney/users/ian/hmn_fst"
+    /nfs/research/birney/users/ian/hmn_fst
+log_dir:
+    /hps/nobackup/birney/users/ian/hmn_fst/logs
+tmp_dir:
+    /hps/nobackup/birney/users/ian/hmn_fst/tmp
+#####################
+# Variables
+#####################
 traits:
-    - "body height"
-    - "body mass index"
-    - "educational attainment"
-    - "self reported educational attainment"
-    - "intelligence"
-    - "mental process"
-    - "mathematical ability"
-    - "cognition"
-    - "digestive system disease"
-    - "inflammatory bowel disease"
-    - "crohn's disease"
-    - "celiac disease"
-    - "autoimmune disease"
-    - "skin pigmentation"
-    - "skin pigmentation measurement"
-    - "facial morphology"
-    - "facial morphology measurement"
-    - "nose morphology measurement"
-    - "eye color"
-    - "eye colour measurement"
-    - "hair color"
-    - "hair colour measurement"
-    - "hair morphology"
-    - "hair morphology measurement"
-    - "hair shape measurement"
-    - "asthma"
-    - "malaria"
-    - "cardiovascular disease"
-    - "cardiovascular disease biomarker measurement"
-    - "diabetes mellitus"
-    - "parkinson's disease"
-    - "Alzheimer's disease"
-    - "schizophrenia"
-    - "unipolar depression"
-    - "fasting blood glucose measurement"
-    - "myocardial infarction"
-    - "low density lipoprotein cholesterol measurement"
-    - "platelet count"
+    - body height
+    - body mass index
+    - educational attainment
+    - self reported educational attainment
+    - intelligence
+    - mental process
+    - mathematical ability
+    - cognition
+    - digestive system disease
+    - inflammatory bowel disease
+    - crohn's disease
+    - celiac disease
+    - autoimmune disease
+    - skin pigmentation
+    - skin pigmentation measurement
+    - facial morphology
+    - facial morphology measurement
+    - nose morphology measurement
+    - eye color
+    - eye colour measurement
+    - hair color
+    - hair colour measurement
+    - hair morphology
+    - hair morphology measurement
+    - hair shape measurement
+    - asthma
+    - malaria
+    - cardiovascular disease
+    - cardiovascular disease biomarker measurement
+    - diabetes mellitus
+    - parkinson's disease
+    - Alzheimer's disease
+    - schizophrenia
+    - unipolar depression
+    - fasting blood glucose measurement
+    - myocardial infarction
+    - low density lipoprotein cholesterol measurement
+    - platelet count
 trait_ids_file:
-    "code/snakemake/20210625/config/trait_ids.tsv"
+    code/snakemake/20210625/config/trait_ids.tsv
 all_trait_ids_file:
-    "code/snakemake/20210625/config/20210628_all_traits.tsv"
+    code/snakemake/20210625/config/20210628_all_traits.tsv
 filt_trait_ids_file:
-    "code/snakemake/20210625/config/20210628_filtered_traits.tsv"
+    code/snakemake/20210625/config/20210628_filtered_traits.tsv
 contigs:
     - 1
     - 2
@@ -71,54 +81,48 @@ contigs:
     - 21
     - 22
 gz_exts:
-    - ".gz"
-    - ".gz.tbi"
-log_dir:
-    "/hps/nobackup/birney/users/ian/hmn_fst/log"
-ftp_dir_1kg_38_annotated:
-    "ftp://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype"
-new_header:
-    "data/1kg/20150319/new_header.vcf"
+    - .gz
+    - .gz.tbi
 date_of_gwas_collection:
-    "20210628"
-tmp_dir:
-    "/hps/nobackup/birney/users/ian/hmn_fst/tmp"
-
+    20210809
+clump_r2:
+    0.1
+clump_kb:
+    1000
 #####################
 # Containers
 #####################
-#picard:
-#    "docker://quay.io/biocontainers/picard:2.25.6--hdfd78af_0"
+picard:
+    docker://quay.io/biocontainers/picard:2.9.2--2
 bash:
-    "docker://bash:5.1.8"
+    docker://bash:5.1.8
 R:
-    "docker://brettellebi/human_traits_fst:R_4.1.0"
+    docker://brettellebi/human_traits_fst:R_4.1.0
 bcftools:
-    "docker://quay.io/biocontainers/bcftools:1.10--h5d15f04_0"
+    docker://quay.io/biocontainers/bcftools:1.10--h5d15f04_0
 plink1.9:
-    "docker://biocontainers/plink1.9:v1.90b6.6-181012-1-deb_cv1"
-
+    docker://biocontainers/plink1.9:v1.90b6.6-181012-1-deb_cv1
+julia:
+    docker://julia:1.6.2
 #####################
 # Key files
 #####################
+ftp_dir_1kg_38_annotated:
+    ftp://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype
+new_header:
+    data/1kg/20150319/new_header.vcf
 ftp_pop_file:
-    "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx"
+    https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx
 local_pop_file:
-    "data/1kg_populations.csv"
+    data/1kg_populations.csv
 local_pop_file_plink:
-    "data/1kg_populations_plink.txt"
+    data/1kg_populations_plink.txt
 get_fst_script:
-    "code/scripts/get_fst.R"
+    code/scripts/get_fst.R
 get_associations_script:
-    "code/scripts/get_associations.R"
+    code/scripts/get_associations.R
 get_variants_script:
-    "code/scripts/get_variants.R"
+    code/scripts/get_variants.R
 
-#####################
-# Variables
-#####################
-clump_r2:
-    "0.1"
-clump_kb:
-    "1000"
+
 

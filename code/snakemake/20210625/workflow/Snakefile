@@ -24,6 +24,12 @@ rule all:
 #        config["local_pop_file"],
 ## get_population_file_plink
 #        config["local_pop_file_plink"],
+# get_mafs
+        expand(os.path.join(config["lts_dir"], "mafs/1kg/20150319/by_chr/{chr}.csv"),
+                chr = CHRS
+        ),
+# combine_mafs
+        os.path.join(config["lts_dir"], "mafs/1kg/20150319/all/all.csv")
 ###############
 # 02_assocs.smk
 ###############
@@ -80,14 +86,14 @@ rule all:
 #            date = DATE_OF_COLLECTION,
 #            efo_id = EFO_IDS_FILT
 #        ),
-# get_fst
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_FILT
-        ),
-# consolidate_fst
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds"),
-            date = DATE_OF_COLLECTION
-        )
+## get_fst
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT
+#        ),
+## consolidate_fst
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds"),
+#            date = DATE_OF_COLLECTION
+#        )
 
 

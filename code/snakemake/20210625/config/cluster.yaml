@@ -2,8 +2,6 @@ __default__:
   memory: 5000
   n: 1
   name: "{rule}.{wildcards}"
-  outdir: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}"
-  outfile: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}/%J_{wildcards}.out"
-  error: "/hps/nobackup/birney/users/ian/hmn_fst/logs/{rule}/%J_{wildcards}.err"
+  outfile: "{log}"
 consolidate_fst:
-  memory: 20000
+  memory: "{resources.mem_mb}" 

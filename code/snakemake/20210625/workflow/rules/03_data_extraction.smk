@@ -1,9 +1,10 @@
-
 rule get_p_values:
     input:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds")
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/p-values/{efo_id}.txt")
+    log:
+        os.path.join(config["log_dir"], "get_p_values/{date}/{efo_id}.log")
     container:
         config["R"]
     script:
@@ -15,6 +16,8 @@ rule clump_snps:
         p_values = os.path.join(config["lts_dir"], "gwasrapidd/{date}/p-values/{efo_id}.txt")
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.log")
+    log:
+        os.path.join(config["log_dir"], "clump_snps/{date}/{efo_id}.log")
     params:
         pref = lambda wildcards, output: os.path.splitext(str(output))[0]
     container:
@@ -46,6 +49,8 @@ rule get_fst:
         pop_file = config["local_pop_file"]
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds")
+    log:
+        os.path.join(config["log_dir"], "get_fst/{date}/{efo_id}.log")
     container:
         config["R"]
     script:
@@ -59,6 +64,10 @@ rule consolidate_fst:
             )
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds")
+    log:
+        os.path.join(config["log_dir"], "consolidate_fst/{date}/all.log")
+    resources:
+        mem_mb = 20000
     container:
         config["R"]
     script:

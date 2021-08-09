@@ -35,6 +35,8 @@ rule get_studies:
     output:
         key = "data/gwasrapidd/{date}/studies_key/{efo_id}.rds",
         studies = "data/gwasrapidd/{date}/studies_raw/{efo_id}.rds"
+    log:
+        os.path.join(config["log_dir"], "get_studies/{date}_{efo_id}.log")
     container:
         config["R"]
     script:
@@ -45,6 +47,8 @@ rule get_snp_ids:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds")
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_snp_ids/{efo_id}.txt")
+    log:
+        os.path.join(config["log_dir"], "get_snp_ids/{date}/{efo_id}.log")
     container:
         config["R"]
     script:
@@ -52,10 +56,12 @@ rule get_snp_ids:
 
 rule extract_gtypes:
     input:
-        vcf = os.path.join(config["working_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
+        vcf = os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
         snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_snp_ids/{efo_id}.txt")
     output:
         os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "extract_gtypes/{date}/{efo_id}/{chr}.log")
     container:
         config["bcftools"]
     shell:
@@ -73,6 +79,8 @@ rule merge_gtypes:
             chr = CHRS)
     output:
         vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/original/{efo_id}.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "merge_gtypes/{date}/{efo_id}.log")
     container:
         config["bcftools"]
     shell:
@@ -90,6 +98,8 @@ rule get_duplicated_sites:
     output:
         dup_sites = os.path.join(config["lts_dir"], "gwasrapidd/{date}/dup_sites/{efo_id}.txt"),
         vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "get_duplicated_sites/{date}/{efo_id}.log")
     container:
         config["bcftools"]
     shell:

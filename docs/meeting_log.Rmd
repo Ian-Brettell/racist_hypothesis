@@ -18,6 +18,15 @@ library(here)
 source(here::here("code/scripts/20210628_source.R"))
 ```
 
+# 5 August 2021
+
+**Meeting with Ewan**
+
+* Remove lip morphology
+* Add COVID-19
+* Re-order traits by median
+* Add control SNPs
+
 # 20 July 2021
 
 **Notes on counts**:

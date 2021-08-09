@@ -27,6 +27,8 @@ rule trait_ids_file:
         traits = config["traits"]
     output:
         config["trait_ids_file"]
+    log:
+        os.path.join(config["log_dir"], "trait_ids_file/all.log")
     container:
         config["R"]
     script:

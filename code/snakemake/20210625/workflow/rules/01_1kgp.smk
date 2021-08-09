@@ -3,6 +3,8 @@ rule download_1KG_38_annotated:
         input = os.path.join(config["ftp_dir_1kg_38_annotated"], "ALL.chr{chr}.phase3_shapeit2_mvncall_integrated_v3plus_nounphased.rsID.genotypes.GRCh38_dbSNP.vcf{gz_ext}")
     output:
         os.path.join(config["working_dir"], "vcfs/1kg/20150319/chrs/{chr}.vcf{gz_ext}")
+    log:
+        os.path.join(config["log_dir"], "download_1KG_38_annotated/{chr}_{gz_ext}.log")
     container:
         config["bash"]
     shell:
@@ -20,7 +22,9 @@ rule fix_vcf_headers:
     input:
         os.path.join(config["working_dir"], "vcfs/1kg/20150319/chrs/{chr}.vcf.gz")
     output:
-        os.path.join(config["working_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz")
+        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "fix_vcf_headers/{chr}.log")
     container:
         config["bcftools"]
     shell:
@@ -36,6 +40,8 @@ rule get_population_file:
         FTP.remote(config["ftp_pop_file"], keep_local = True)
     output:
         config["local_pop_file"]
+    log:
+        os.path.join(config["log_dir"], "get_population_file/all.log")
     run:
         pop_file = pd.read_excel(input[0], sheet_name = "Sample Info")
         pop_file = pop_file.loc[:, ['Sample', 'Population']]
@@ -46,6 +52,8 @@ rule get_population_file_plink:
         FTP.remote(config["ftp_pop_file"], keep_local = True)
     output:
         config["local_pop_file_plink"]
+    log:
+        os.path.join(config["log_dir"], "get_population_file_plink/all.log")
     run:
         pop_file = pd.read_excel(input[0], sheet_name = "Sample Info")
         pop_file = pop_file.loc[:, ['Sample', 'Population']]
@@ -57,3 +65,44 @@ rule get_population_file_plink:
         pop_file = pop_file[['FID', 'IID', 'CLUSTER']]
         # Write to file
         pop_file.to_csv(output[0], sep = "\t", header = False, index = False)
+
+# Get minor allele frequencies of all variants in VCF    
+rule get_mafs:
+    input:
+        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz")
+    output:
+        os.path.join(config["lts_dir"], "mafs/1kg/20150319/by_chr/{chr}.csv")
+    log:
+        os.path.join(config["log_dir"], "get_mafs/{chr}.log")
+    container:
+        config["bcftools"]
+    shell:
+        """
+        bcftools view \
+            --max-alleles 2 \
+            --output-type u \
+            {input} |\
+        bcftools query \
+            --format '%CHROM,%POS,%ID,%REF,%ALT,%EAS_AF,%AMR_AF,%AFR_AF,%EUR_AF,%SAS_AF\\n' \
+            --output {output} \
+                2> {log}
+        """
+
+rule combine_mafs:
+    input:
+        expand(os.path.join(config["lts_dir"], "mafs/1kg/20150319/by_chr/{chr}.csv"),
+                chr = CHRS)
+    output:
+        os.path.join(config["lts_dir"], "mafs/1kg/20150319/all/all.csv")
+    log:
+        os.path.join(config["log_dir"], "combine_mafs/all.log")
+    params:
+        header = "'CHROM,POS,ID,REF,ALT,EAS_AF,AMR_AF,AFR_AF,EUR_AF,SAS_AF'"
+    container:
+        config["bash"]
+    shell:
+        """
+        echo {params.header} > {output} ;
+        cat {input} >> {output}
+        """
+            
