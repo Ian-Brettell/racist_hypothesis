@@ -150,7 +150,7 @@ fst_all_df = fst_all %>%
                                    TRAIT = trait),
                    by = "EFO_ID") %>% 
   # add `TRAIT` for control SNPs
-  dplyr::mutate(TRAIT = dplyr::case_when(EFO_ID == "CONTROL" ~ "CONTROL",
+  dplyr::mutate(TRAIT = dplyr::case_when(EFO_ID == "CONTROL" ~ "control",
                                          EFO_ID == "MONDO_0100096" ~ "COVID-19",
                                          TRUE ~ as.character(TRAIT))
                 )
@@ -207,7 +207,7 @@ snp_count_plot = list("PRE-CLUMP" = fst_all_df,
                       "POST-CLUMP" = fst_clumped_df) %>% 
   dplyr::bind_rows(.id = "FILTER") %>% 
   # remove CONTROL SNPs
-  dplyr::filter(TRAIT != "CONTROL") %>% 
+  dplyr::filter(TRAIT != "control") %>% 
   # order variables
   dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_all)),
                 FILTER = factor(FILTER, levels = c("PRE-CLUMP", "POST-CLUMP"))) %>% 
@@ -264,9 +264,9 @@ fst_clumped_df %>%
 
 ```{r}
 ## Add palette based on median Fst
-od_clumped_traits = c("CONTROL",
+od_clumped_traits = c("control",
                      fst_clumped_df %>% 
-                       dplyr::filter(TRAIT != "CONTROL") %>% 
+                       dplyr::filter(TRAIT != "control") %>% 
                        dplyr::group_by(TRAIT) %>% 
                        dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
                        dplyr::arrange(MEDIAN_FST) %>% 
@@ -334,12 +334,11 @@ plotly::ggplotly(plotly_ecdf_all,
 
 ### Select
 
-
 Select interesting traits
 
 ```{r, out.width='150%'}
 # get traits to look closer at
-target_traits = c("CONTROL",
+target_traits = c("control",
                   "body height",
                   "body mass index",
                   "mathematical ability",
