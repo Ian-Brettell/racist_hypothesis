@@ -43,6 +43,76 @@ rule clump_snps:
 # For this reason, we have specified the `*.log` file as the output,
 # So that it doesn't cause the snakemake process to fail.
 
+rule get_ref_mafs:
+    input:
+        all_mafs = os.path.join(config["lts_dir"], "mafs/1kg/20150319/all/all.csv"),
+        ref_snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/EFO_0004339.clumped"),
+        # Include log file as input because that was the output of the `clump_snps` rule
+        clump_log = os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/EFO_0004339.log")
+    output:
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/EFO_0004339.csv")
+    log:
+        os.path.join(config["log_dir"], "get_ref_mafs/{date}/EFO_0004339.log")
+    params:
+        percent_interval = config["percent_interval"]
+    resources:
+        mem_mb = 30000
+    container:
+        config["R"]
+    script:
+        "../scripts/get_ref_mafs.R"
+
+rule get_control_snps:
+    input:
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/EFO_0004339.csv")
+    output:
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/CONTROL.txt")
+    log:
+        os.path.join(config["log_dir"], "get_control_snps/{date}/CONTROL.log")
+    run:
+        df = pd.read_csv(input[0])
+        df['CONTROL_ID'].to_csv(output[0], header = False, index = False)
+
+rule get_control_vcf_chr:
+    input:
+        vcf = os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
+        snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/CONTROL.txt")
+    output:
+        os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/CONTROL/by_chr/{chr}.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "get_control_vcf_chr/{date}/CONTROL/{chr}.log")
+    container:
+        config["bcftools"]
+    shell:
+        """
+        bcftools view \
+            --include ID=@{input.snps} \
+            --output-type z \
+            --output-file {output} \
+            {input.vcf}
+        """
+
+rule merge_control_vcf:
+    input:
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{{date}}/CONTROL/by_chr/{chr}.vcf.gz"),
+            chr = CHRS)
+    output:
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/CONTROL.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "merge_control_vcf/{date}/CONTROL.log")
+    container:
+        config["bcftools"]
+    shell:
+        """
+        bcftools concat \
+            --output {output.vcf} \
+            --output-type z \
+            {input}
+        """
+
+# Set rule order to avoid `AmbiguousRuleException` as both rules are sending to the `no_dups` directory
+ruleorder: merge_control_vcf > get_duplicated_sites
+
 rule get_fst:
     input:
         vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz"),
@@ -60,7 +130,7 @@ rule consolidate_fst:
     input:
         rds = expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_FILT
+            efo_id = EFO_IDS_FILT_PLUS_CONTROL
             )
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds")
@@ -72,4 +142,3 @@ rule consolidate_fst:
         config["R"]
     script:
         "../scripts/consolidate_fst.R"
-

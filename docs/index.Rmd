@@ -108,10 +108,6 @@ filt_assocs = all_assocs %>%
     length(unique(EFO_ID@risk_alleles$variant_id)) >= 50
   })
 
-# add COVID-19
-covid_id = all_traits_tbl$efo_id[all_traits_tbl$trait == "COVID-19"]
-filt_assocs[[covid_id]] = all_assocs[[covid_id]]
-
 # Filter `all_traits_tbl` for those traits and save to file
 filt_traits_tbl = all_traits_tbl %>% 
   dplyr::filter(efo_id %in% names(filt_assocs)) %>% 
@@ -133,7 +129,7 @@ Full Snakemake pipeline here: <https://github.com/brettellebi/human_traits_fst/t
 # Read in processed data
 
 ```{r}
-target_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd/20210628"
+target_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd/20210809"
 
 # Fst
 fst_all_path = file.path(target_dir, "pegas/fst/consol/all.rds")
@@ -152,7 +148,12 @@ fst_all_df = fst_all %>%
   dplyr::left_join(all_traits_tbl %>% 
                      dplyr::select(EFO_ID = efo_id,
                                    TRAIT = trait),
-                   by = "EFO_ID")
+                   by = "EFO_ID") %>% 
+  # add `TRAIT` for control SNPs
+  dplyr::mutate(TRAIT = dplyr::case_when(EFO_ID == "CONTROL" ~ "CONTROL",
+                                         EFO_ID == "MONDO_0100096" ~ "COVID-19",
+                                         TRUE ~ as.character(TRAIT))
+                )
 
 # Clumped SNPs
 ## Note that for some traits, no SNPs met the p-value threshold, so Plink1.9 did not produce a `*.clumped` file
@@ -181,6 +182,12 @@ fst_clumped_df = fst_clumped %>%
                                    TRAIT = trait),
                    by = "EFO_ID")
 
+# Add CONTROL SNPs
+fst_clumped_df = rbind(fst_clumped_df,
+                       fst_all_df %>% 
+                         dplyr::filter(EFO_ID == "CONTROL")
+                       )
+
 ```
 
 ## Add palette based on pre-clump SNP count
@@ -199,6 +206,8 @@ names(pal_all) = fst_all_df %>%
 snp_count_plot = list("PRE-CLUMP" = fst_all_df,
                       "POST-CLUMP" = fst_clumped_df) %>% 
   dplyr::bind_rows(.id = "FILTER") %>% 
+  # remove CONTROL SNPs
+  dplyr::filter(TRAIT != "CONTROL") %>% 
   # order variables
   dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_all)),
                 FILTER = factor(FILTER, levels = c("PRE-CLUMP", "POST-CLUMP"))) %>% 
@@ -238,39 +247,34 @@ ggsave(here::here("docs/plots/20210722_snp_counts.svg"),
 ```
 
 
-## Table of post-clump traits
+# eCDF for $F_{ST}$
+
+## Traits ordered by median Fst, with number of loci
 
 ```{r}
 fst_clumped_df %>% 
-  dplyr::count(EFO_ID, TRAIT) %>% 
-  dplyr::rename(N_SNPS = n) %>% 
-  dplyr::arrange(desc(N_SNPS)) %>% 
-  DT::datatable(., options = list(pageLength = 10))
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = n()) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  DT::datatable(.)
 ```
-
-
-# eCDF for $F_{ST}$
 
 ## New palette for clumped traits
 
 ```{r}
-## Add palette based on post-clump SNP count
-pal_clump = turbo(n = length(unique(fst_clumped_df$EFO_ID)))
-names(pal_clump) = fst_clumped_df %>% 
-  dplyr::count(EFO_ID) %>% 
-  dplyr::arrange(desc(n)) %>% 
-  dplyr::pull(EFO_ID)
-
-# order `TRAIT` by `EFO_ID` 
-od_clumped_traits = fst_clumped_df %>% 
-  dplyr::select(EFO_ID, TRAIT) %>% 
-  dplyr::distinct() %>% 
-  dplyr::left_join(data.frame(EFO_ID = names(pal_clump)),
-                   .,
-                   by = "EFO_ID") %>% 
-  dplyr::pull(TRAIT)
-
-# make names correspond to trait
+## Add palette based on median Fst
+od_clumped_traits = c("CONTROL",
+                     fst_clumped_df %>% 
+                       dplyr::filter(TRAIT != "CONTROL") %>% 
+                       dplyr::group_by(TRAIT) %>% 
+                       dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
+                       dplyr::arrange(MEDIAN_FST) %>% 
+                       dplyr::pull(TRAIT)
+                     )
+pal_clump = c("#6d6a75",
+              turbo(n = length(od_clumped_traits) - 1)
+            )
 names(pal_clump) = od_clumped_traits
 ```
 
@@ -278,12 +282,8 @@ names(pal_clump) = od_clumped_traits
 
 ```{r, eval = F}
 ecdf_all_faceted = fst_clumped_df %>% 
-  dplyr::group_by(EFO_ID) %>%
-  # filter for those with >0 SNPs in the clumped dataset
-  dplyr::filter(EFO_ID %in% unique(fst_clumped_df$EFO_ID)) %>% 
-  dplyr::ungroup() %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_clump))) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
     scale_colour_manual(values = pal_clump) +
@@ -293,8 +293,7 @@ ecdf_all_faceted = fst_clumped_df %>%
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 4.5))
 
-
-ggsave(here::here("docs/plots/20210701_ecdf_all_faceted.png"),
+ggsave(here::here("docs/plots/20210810_ecdf_all_faceted.png"),
        plot = ecdf_all_faceted, 
        device = "png",
        width = 30,
@@ -304,7 +303,7 @@ ggsave(here::here("docs/plots/20210701_ecdf_all_faceted.png"),
 ```
 
 ```{r, out.width='150%'}
-knitr::include_graphics(here::here("docs/plots/20210701_ecdf_all_faceted.png"))
+knitr::include_graphics(here::here("docs/plots/20210810_ecdf_all_faceted.png"))
 ```
 
 ## Plotly
@@ -320,7 +319,7 @@ plotly_ecdf_all = fst_clumped_df %>%
   dplyr::filter(EFO_ID %in% unique(fst_clumped_df$EFO_ID)) %>% 
   dplyr::ungroup() %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_clump))) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
     scale_colour_manual(values = pal_clump) +
@@ -335,9 +334,13 @@ plotly::ggplotly(plotly_ecdf_all,
 
 ### Select
 
+
+Select interesting traits
+
 ```{r, out.width='150%'}
 # get traits to look closer at
-target_traits = c("body height",
+target_traits = c("CONTROL",
+                  "body height",
                   "body mass index",
                   "mathematical ability",
                   "intelligence",
@@ -345,7 +348,7 @@ target_traits = c("body height",
                   "type ii diabetes mellitus",
                   "asthma",
                   "HIV-1 infection",
-                  "viral load", 
+                  "cognitive function measurement", 
                   "heart failure",
                   "diabetes mellitus",
                   "coronary artery disease",
@@ -356,16 +359,31 @@ target_traits = c("body height",
                   "skin pigmentation measurement",
                   "eye colour measurement",
                   "facial morphology measurement",
-                  "melanoma",
                   "synophrys measurement",
-                  "lip morphology measurement",
                   "squamous cell carcinoma",
                   "tuberculosis",
+                  "cleft palate",
+                  "neurotic disorder",
+                  "reaction time measurement",
                   "endometrial carcinoma",
                   "BMI-adjusted hip circumference",
                   "alcohol dependence measurement",
-                  "loneliness measurement"
+                  "loneliness measurement",
+                  "COVID-19"
                   )
+
+# create new palette based on median Fst
+od_target_traits = fst_clumped_df %>% 
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  dplyr::pull(TRAIT)
+pal_target = c("#6d6a75",
+              turbo(n = length(od_target_traits) - 1)
+             )
+names(pal_target) = od_target_traits
+
 
 plotly_ecdf_select = fst_clumped_df %>%
   # filter for `target_traits`
@@ -377,10 +395,10 @@ plotly_ecdf_select = fst_clumped_df %>%
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_target_traits)) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
-    scale_colour_manual(values = pal_clump) +
+    scale_colour_manual(values = pal_target) +
     theme_bw() +
     ggtitle("eCDF") +
     guides(colour = "none") +
@@ -447,10 +465,10 @@ plotly_ecdf_select_2 = fst_clumped_df_red %>%
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_target_traits)) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
-    scale_colour_manual(values = pal_clump) +
+    scale_colour_manual(values = pal_target) +
     theme_bw() +
     ggtitle("eCDF") +
     guides(colour = "none") +
@@ -510,20 +528,20 @@ ridges_plot = fst_clumped_df %>%
   dplyr::distinct(SNP, .keep_all = T) %>% 
   dplyr::ungroup() %>% 
   # reverse order of traits to put `body height` at the top
-  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(names(pal_clump)))) %>% 
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(names(pal_target)))) %>% 
   # plot
   ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
     geom_density_ridges(scale = 2,
                         bandwidth = 0.003,
                         calc_ecdf = TRUE,
-                        quantiles = c(0.5, 0.9),
+                        quantiles = 0.5,
                         quantile_lines = T,
                         jittered_points = T,
                         point_shape = '|', alpha = 0.85, point_size = 2,
                         position = position_points_jitter(height = 0),
                         ) +
-    scale_fill_manual(values = pal_clump) +
-    scale_colour_manual(values = darker(pal_clump)) +
+    scale_fill_manual(values = pal_target) +
+    scale_colour_manual(values = darker(pal_target)) +
     guides(fill = "none", colour = "none") +
     theme_cowplot() +
     scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
@@ -537,14 +555,14 @@ ridges_plot
 width = 8
 height = 20
 
-ggsave(here::here("docs/plots/20210721_ridges.png"),
+ggsave(here::here("docs/plots/20210810_ridges.png"),
        device = "png",
        width = width,
        height = height,
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20210721_ridges.svg"),
+ggsave(here::here("docs/plots/20210810_ridges.svg"),
        device = "svg",
        width = width,
        height = height,
@@ -564,16 +582,16 @@ ecdf_plot_face = fst_clumped_df %>%
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_clumped_traits)) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_target_traits)) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
-    scale_colour_manual(values = pal_clump) +
+    scale_colour_manual(values = pal_target) +
     theme_cowplot(rel_small = 9/14) +
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 5)) +
     xlab(expression(italic(F[ST]))) +
     ylab("Cumulative Probability") +
-    facet_wrap(~TRAIT, nrow = 7, ncol = 4) 
+    facet_wrap(~TRAIT, nrow = 6, ncol = 5) 
 
 ecdf_plot_face
 ```
@@ -589,10 +607,10 @@ ecdf_plot_all = fst_clumped_df %>%
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_clump)[names(pal_clump) %in% target_traits])) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_clump)[names(pal_target) %in% target_traits])) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
-    scale_colour_manual(values = pal_clump) +
+    scale_colour_manual(values = pal_target) +
     theme_cowplot() +
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 5)) +
@@ -623,14 +641,14 @@ final_figure
 width = 12
 height = 12
 
-ggsave(here::here("docs/plots/20210721_final.png"),
+ggsave(here::here("docs/plots/20210810_final.png"),
        device = "png",
        width = width,
        height = height,
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20210721_final.svg"),
+ggsave(here::here("docs/plots/20210810_final.svg"),
        device = "svg",
        width = width,
        height = height,

@@ -12,51 +12,14 @@ tmp_dir:
 #####################
 # Variables
 #####################
-traits:
-    - body height
-    - body mass index
-    - educational attainment
-    - self reported educational attainment
-    - intelligence
-    - mental process
-    - mathematical ability
-    - cognition
-    - digestive system disease
-    - inflammatory bowel disease
-    - crohn's disease
-    - celiac disease
-    - autoimmune disease
-    - skin pigmentation
-    - skin pigmentation measurement
-    - facial morphology
-    - facial morphology measurement
-    - nose morphology measurement
-    - eye color
-    - eye colour measurement
-    - hair color
-    - hair colour measurement
-    - hair morphology
-    - hair morphology measurement
-    - hair shape measurement
-    - asthma
-    - malaria
-    - cardiovascular disease
-    - cardiovascular disease biomarker measurement
-    - diabetes mellitus
-    - parkinson's disease
-    - Alzheimer's disease
-    - schizophrenia
-    - unipolar depression
-    - fasting blood glucose measurement
-    - myocardial infarction
-    - low density lipoprotein cholesterol measurement
-    - platelet count
 trait_ids_file:
     code/snakemake/20210625/config/trait_ids.tsv
 all_trait_ids_file:
-    code/snakemake/20210625/config/20210628_all_traits.tsv
+    code/snakemake/20210625/config/20210809_all_traits.tsv
 filt_trait_ids_file:
-    code/snakemake/20210625/config/20210628_filtered_traits.tsv
+    code/snakemake/20210625/config/20210809_filtered_traits.tsv
+additional_traits:
+    - COVID-19
 contigs:
     - 1
     - 2
@@ -89,6 +52,12 @@ clump_r2:
     0.1
 clump_kb:
     1000
+# EFO ID for body height
+ref_efo_id:
+    EFO_0004339
+# Percentile bin range to gather control SNPs
+percent_interval:
+    5
 #####################
 # Containers
 #####################

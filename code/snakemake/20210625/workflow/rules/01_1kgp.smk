@@ -35,6 +35,57 @@ rule fix_vcf_headers:
             {input}
         """
 
+rule index_vcfs:
+    input:
+        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz")
+    output:
+        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz.tbi")
+    log:
+        os.path.join(config["log_dir"], "index_vcfs/{chr}.log")
+    container:
+        config["bcftools"]
+    shell:
+        """
+        bcftools index \
+            --tbi \
+            {input}
+        """
+
+rule concat_vcfs:
+    input:
+        expand(os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
+                chr = CHRS
+        )
+    output:
+        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "concat_vcfs/all.log")
+    container:
+        config["bcftools"]
+    shell:
+        """
+        bcftools concat \
+            --output {output} \
+            --output-type z \
+            {input}
+        """
+
+rule index_full_vcf:
+    input:
+        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz")
+    output:
+        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz.tbi")
+    log:
+        os.path.join(config["log_dir"], "index_full_vcf/all.log")
+    container:
+        config["bcftools"]
+    shell:
+        """
+        bcftools index \
+            --tbi \
+            {input}
+        """
+
 rule get_population_file:
     input:
         FTP.remote(config["ftp_pop_file"], keep_local = True)

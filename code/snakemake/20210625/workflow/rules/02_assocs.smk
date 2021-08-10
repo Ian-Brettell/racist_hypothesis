@@ -29,18 +29,18 @@
 #    output:
 #        expand(config["lts_dir"], "gwasrapidd/{date}/studies_raw/{efo_id}.rds")
 
-rule get_studies:
-    input:
-        "data/gwasrapidd/{date}/associations_raw/{efo_id}.rds"
-    output:
-        key = "data/gwasrapidd/{date}/studies_key/{efo_id}.rds",
-        studies = "data/gwasrapidd/{date}/studies_raw/{efo_id}.rds"
-    log:
-        os.path.join(config["log_dir"], "get_studies/{date}_{efo_id}.log")
-    container:
-        config["R"]
-    script:
-        "../scripts/get_studies.R"
+#rule get_studies:
+#    input:
+#        os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_raw/{efo_id}.rds")
+#    output:
+#        key = "data/gwasrapidd/{date}/studies_key/{efo_id}.rds",
+#        studies = "data/gwasrapidd/{date}/studies_raw/{efo_id}.rds"
+#    log:
+#        os.path.join(config["log_dir"], "get_studies/{date}_{efo_id}.log")
+#    container:
+#        config["R"]
+#    script:
+#        "../scripts/get_studies.R"
 
 rule get_snp_ids:
     input:
@@ -67,6 +67,7 @@ rule extract_gtypes:
     shell:
         """
         bcftools view \
+            --max-alleles 2 \
             --include ID=@{input.snps} \
             --output-type z \
             --output-file {output} \

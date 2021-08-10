@@ -5,3 +5,5 @@ __default__:
   outfile: "{log}"
 consolidate_fst:
   memory: "{resources.mem_mb}" 
+get_ref_mafs:
+  memory: "{resources.mem_mb}" 
