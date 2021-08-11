@@ -110,9 +110,11 @@ filt_assocs = all_assocs %>%
 
 # Filter `all_traits_tbl` for those traits and save to file
 filt_traits_tbl = all_traits_tbl %>% 
-  dplyr::filter(efo_id %in% names(filt_assocs)) %>% 
+  # and add COVID-19
+  dplyr::filter(efo_id %in% c(names(filt_assocs), "MONDO_0100096")) %>% 
   readr::write_tsv(out_file)
 ```
+
 
 ```{r, include = F}
 date_of_collection = "20210809"
@@ -182,7 +184,7 @@ fst_clumped_df = fst_clumped %>%
                                    TRAIT = trait),
                    by = "EFO_ID")
 
-# Add CONTROL SNPs
+# Add CONTROL and COVID-19 SNPs
 fst_clumped_df = rbind(fst_clumped_df,
                        fst_all_df %>% 
                          dplyr::filter(EFO_ID == "CONTROL")
@@ -230,7 +232,7 @@ plotly::ggplotly(snp_count_plot,
 width = 12
 height = 10
 
-ggsave(here::here("docs/plots/20210722_snp_counts.png"),
+ggsave(here::here("docs/plots/20210810_snp_counts.png"),
        plot = snp_count_plot,
        device = "png",
        width = width,
@@ -238,7 +240,7 @@ ggsave(here::here("docs/plots/20210722_snp_counts.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20210722_snp_counts.svg"),
+ggsave(here::here("docs/plots/20210810_snp_counts.svg"),
        plot = snp_count_plot,
        device = "svg",
        width = width,
@@ -255,7 +257,7 @@ ggsave(here::here("docs/plots/20210722_snp_counts.svg"),
 fst_clumped_df %>% 
   dplyr::group_by(TRAIT) %>% 
   dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
-                   N_LOCI = n()) %>% 
+                   N_LOCI = dplyr::n()) %>% 
   dplyr::arrange(MEDIAN_FST) %>% 
   DT::datatable(.)
 ```
@@ -274,7 +276,7 @@ od_clumped_traits = c("control",
                      )
 pal_clump = c("#6d6a75",
               turbo(n = length(od_clumped_traits) - 1)
-            )
+              )
 names(pal_clump) = od_clumped_traits
 ```
 
@@ -289,6 +291,7 @@ ecdf_all_faceted = fst_clumped_df %>%
     scale_colour_manual(values = pal_clump) +
     theme_bw() +
     ggtitle("eCDF") +
+    xlab(expression(italic(F[ST]))) +
     facet_wrap(~TRAIT) +
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 4.5))
@@ -358,7 +361,6 @@ target_traits = c("control",
                   "skin pigmentation measurement",
                   "eye colour measurement",
                   "facial morphology measurement",
-                  "synophrys measurement",
                   "squamous cell carcinoma",
                   "tuberculosis",
                   "cleft palate",
@@ -406,6 +408,58 @@ plotly_ecdf_select = fst_clumped_df %>%
 plotly::ggplotly(plotly_ecdf_select,
                  tooltip = c("TRAIT"))
 ```
+
+```{r, out.width='150%'}
+target_traits_sml = c("control",
+                      "body height",
+                      "body mass index",
+                      "mathematical ability",
+                      "intelligence",
+                      "self reported educational attainment",
+                      "cognitive function measurement", 
+                      "schizophrenia",
+                      "skin pigmentation",
+                      "skin pigmentation measurement",
+                      "eye colour measurement",
+                      "BMI-adjusted hip circumference"
+                      )
+
+# create new palette based on median Fst
+od_target_traits_sml = fst_clumped_df %>% 
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  dplyr::pull(TRAIT)
+pal_target_sml = c("#6d6a75",
+              turbo(n = length(od_target_traits_sml) - 1)
+             )
+names(pal_target_sml) = od_target_traits_sml
+
+
+plotly_ecdf_sml = fst_clumped_df %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits_sml) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_target_traits_sml)) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = pal_target_sml) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5))
+
+plotly::ggplotly(plotly_ecdf_sml,
+                 tooltip = c("TRAIT"))
+```
+
 
 # Extract same number of top SNPs for selected traits as `skin pigmentation`
 
@@ -568,6 +622,38 @@ ggsave(here::here("docs/plots/20210810_ridges.svg"),
        units = "in")
 ```
 
+```{r, fig.dim=c(8,20)}
+ridges_plot_sml = fst_clumped_df %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(names(pal_target_sml)))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+    geom_density_ridges(scale = 2,
+                        bandwidth = 0.003,
+                        calc_ecdf = TRUE,
+                        quantiles = 0.5,
+                        quantile_lines = T,
+                        jittered_points = T,
+                        point_shape = '|', alpha = 0.85, point_size = 2,
+                        position = position_points_jitter(height = 0),
+                        ) +
+    scale_fill_manual(values = pal_target) +
+    scale_colour_manual(values = darker(pal_target)) +
+    guides(fill = "none", colour = "none") +
+    theme_cowplot() +
+    scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+    xlab(expression(italic(F[ST]))) +
+    ylab(NULL)
+
+ridges_plot_sml
+```
+
 ## eCDF plot faceted
 
 ```{r}
@@ -593,6 +679,31 @@ ecdf_plot_face = fst_clumped_df %>%
     facet_wrap(~TRAIT, nrow = 6, ncol = 5) 
 
 ecdf_plot_face
+```
+
+```{r}
+ecdf_plot_face_sml = fst_clumped_df %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits_sml) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_target_sml))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = pal_target_sml) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT, nrow = 3, ncol = 4) 
+
+ecdf_plot_face_sml
 ```
 
 ```{r}

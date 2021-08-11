@@ -36,6 +36,8 @@ EFO_IDS_FILT_PLUS = EFO_IDS_FILT.tolist() + additional_traits
 # Add control
 EFO_IDS_FILT_PLUS_CONTROL = EFO_IDS_FILT_PLUS + ["CONTROL"]
 
+EFO_IDS_PLUS_CONTROL = EFO_IDS.tolist() + ["CONTROL"]
+
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 FTP = FTPRemoteProvider()
 
