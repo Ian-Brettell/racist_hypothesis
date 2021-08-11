@@ -744,14 +744,13 @@ final_figure = cowplot::ggdraw() +
                   x = c(0, .5, .5), y = c(1, 1, .35),
                   hjust = c(-.15, .15, .15),
                   color = "#37323E")
-
-final_figure
 ```
 ```{r, eval = F}
 width = 12
 height = 12
 
 ggsave(here::here("docs/plots/20210810_final.png"),
+       final_figure,
        device = "png",
        width = width,
        height = height,
@@ -759,9 +758,14 @@ ggsave(here::here("docs/plots/20210810_final.png"),
        dpi= 400)
 
 ggsave(here::here("docs/plots/20210810_final.svg"),
+       final_figure,
        device = "svg",
        width = width,
        height = height,
        units = "in")
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20210810_final.png"))
 ```
 
