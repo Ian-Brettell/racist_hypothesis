@@ -14,6 +14,7 @@ RUN apt install -y \
 # Install CRAN packages
 RUN install2.r --error \
     here \
+    Rcpp \
     pegas \
     knitr \
     ggridges \
