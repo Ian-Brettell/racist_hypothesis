@@ -13,30 +13,47 @@ rule all:
 ###############
 # 01_1kgp.smk
 ###############
-## download_1KG_38_annotated        
-#        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/chrs/{chr}.vcf{gz_ext}"),
-#            chr = CHRS,
-#            gz_ext = GZ_EXTS),
-# fix_vcf_headers
-        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
-            chr = CHRS),
+# download_1KG_38_highcov
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/chrs/{chr}.vcf.gz"),
+                chr = CHRS
+        ),
+# index_highcov
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/chrs/{chr}.vcf.gz.tbi"),
+                chr = CHRS
+        ),
+# download_dbsnp
+        expand(os.path.join(config["working_dir"], "vcfs/dbsnp/20180424/dbsnp.vcf{gz_ext}"),
+                gz_ext = GZ_EXTS
+        ),
+# remove_annotations
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/no_annotations/{chr}.vcf.gz"),
+                chr = CHRS
+        ),
+# index_no_annotations
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/no_annotations/{chr}.vcf.gz.tbi"),
+                chr = CHRS
+        ),
+# annotate_highcov
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/annotated/{chr}.vcf.gz"),
+                chr = CHRS
+        ),
+# filter_highcov_samples
+        expand(os.path.join(config["lts_dir"], "vcfs/1kg/20201028/2504_samples/{chr}.vcf.gz"),
+                chr = CHRS
+        ),
 # index_vcfs
-        expand(os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz.tbi"),
+        expand(os.path.join(config["lts_dir"], "vcfs/1kg/20201028/2504_samples/{chr}.vcf.gz.tbi"),
             chr = CHRS),
-# concat_vcfs
-        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz"),
-# index_full_vcf
-        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz.tbi"),
+# get_mafs
+        expand(os.path.join(config["lts_dir"], "mafs/1kg/20201028/by_chr/{chr}.csv"),
+                chr = CHRS
+        ),
+# combine_mafs
+        os.path.join(config["lts_dir"], "mafs/1kg/20201028/all/all.csv"),
 # get_population_file
         config["local_pop_file"],
 # get_population_file_plink
         config["local_pop_file_plink"],
-# get_mafs
-        expand(os.path.join(config["lts_dir"], "mafs/1kg/20150319/by_chr/{chr}.csv"),
-                chr = CHRS
-        ),
-# combine_mafs
-        os.path.join(config["lts_dir"], "mafs/1kg/20150319/all/all.csv"),
 ###############
 # 02_assocs.smk
 ###############
@@ -46,18 +63,18 @@ rule all:
             efo_id = EFO_IDS
         ),
 # extract_gtypes
-        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz"),
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz"),
             date = DATE_OF_COLLECTION,
             efo_id = EFO_IDS,
             chr = CHRS
         ),
 # merge_gtypes
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/original/{efo_id}.vcf.gz"),
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/original/{efo_id}.vcf.gz"),
             date = DATE_OF_COLLECTION,
             efo_id = EFO_IDS
         ),
 # get_duplicated_sites
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz"),
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/no_dups/{efo_id}.vcf.gz"),
             date = DATE_OF_COLLECTION,
             efo_id = EFO_IDS
         ),
@@ -70,36 +87,36 @@ rule all:
             efo_id = EFO_IDS
         ),
 # clump_snps
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.log"),
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/plink/clumped/{efo_id}.log"),
             date = DATE_OF_COLLECTION,
             efo_id = EFO_IDS
         ),
-# get_ref_mafs
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/EFO_0004339.csv"),
-            date = DATE_OF_COLLECTION,
-            ref_efo_id = config["ref_efo_id"]
-        ),
-# get_control_snps
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/CONTROL.txt"),
-            date = DATE_OF_COLLECTION,
-            ref_efo_id = config["ref_efo_id"]
-        ),
-# get_control_vcf_chr
-        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/CONTROL/by_chr/{chr}.vcf.gz"),
-            date = DATE_OF_COLLECTION,
-            chr = CHRS
-        ),
-# merge_control_vcf
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/CONTROL.vcf.gz"),
-            date = DATE_OF_COLLECTION
-        ),
-# get_fst
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_PLUS_CONTROL
-        ),
-# consolidate_fst
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds"),
-            date = DATE_OF_COLLECTION
-        ),
+## get_ref_mafs
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/EFO_0004339.csv"),
+#            date = DATE_OF_COLLECTION,
+#            ref_efo_id = config["ref_efo_id"]
+#        ),
+## get_control_snps
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/CONTROL.txt"),
+#            date = DATE_OF_COLLECTION,
+#            ref_efo_id = config["ref_efo_id"]
+#        ),
+## get_control_vcf_chr
+#        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/CONTROL/by_chr/{chr}.vcf.gz"),
+#            date = DATE_OF_COLLECTION,
+#            chr = CHRS
+#        ),
+## merge_control_vcf
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/CONTROL.vcf.gz"),
+#            date = DATE_OF_COLLECTION
+#        ),
+## get_fst
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/per_trait/{efo_id}.rds"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_PLUS_CONTROL
+#        ),
+## consolidate_fst
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/all.rds"),
+#            date = DATE_OF_COLLECTION
+#        ),
 

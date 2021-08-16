@@ -73,11 +73,19 @@ plink1.9:
     docker://biocontainers/plink1.9:v1.90b6.6-181012-1-deb_cv1
 julia:
     docker://julia:1.6.2
+snpsift:
+    docker://quay.io/biocontainers/snpsift:4.3.1t--2
 #####################
 # Key files
 #####################
 ftp_dir_1kg_38_annotated:
     ftp://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype
+ftp_dir_1kg_38_highcov:
+    ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased
+dbsnp_vcf_prefix:
+    ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/00-All.vcf
+1kgp_2504_samples:
+    code/snakemake/20210625/config/1kgp_2504_samples.txt
 new_header:
     data/1kg/20150319/new_header.vcf
 ftp_pop_file:
@@ -86,12 +94,7 @@ local_pop_file:
     data/1kg_populations.csv
 local_pop_file_plink:
     data/1kg_populations_plink.txt
-get_fst_script:
-    code/scripts/get_fst.R
-get_associations_script:
-    code/scripts/get_associations.R
-get_variants_script:
-    code/scripts/get_variants.R
+
 
 
 

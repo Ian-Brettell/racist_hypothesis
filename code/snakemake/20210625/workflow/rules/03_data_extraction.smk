@@ -12,10 +12,10 @@ rule get_p_values:
 
 rule clump_snps:
     input:
-        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz"),
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/no_dups/{efo_id}.vcf.gz"),
         p_values = os.path.join(config["lts_dir"], "gwasrapidd/{date}/p-values/{efo_id}.txt")
     output:
-        os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.log")
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/plink/clumped/{efo_id}.log")
     log:
         os.path.join(config["log_dir"], "clump_snps/{date}/{efo_id}.log")
     params:
@@ -31,7 +31,8 @@ rule clump_snps:
           --clump-p2 0.00000001 \
           --clump-r2 {config[clump_r2]} \
           --clump-kb {config[clump_kb]} \
-          --out {params.pref}     
+          --out {params.pref} \
+            > {log} 2>&1
         """
 # Note: some variants missing from the main dataset, e.g.
 # Warning: 'rs199921354' is missing from the main dataset, and is a top variant.
@@ -46,13 +47,13 @@ rule clump_snps:
 rule get_ref_mafs:
     input:
         all_mafs = os.path.join(config["lts_dir"], "mafs/1kg/20150319/all/all.csv"),
-        ref_snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/EFO_0004339.clumped"),
+        ref_snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.clumped"),
         # Include log file as input because that was the output of the `clump_snps` rule
-        clump_log = os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/EFO_0004339.log")
+        clump_log = os.path.join(config["lts_dir"], "gwasrapidd/{date}/plink/clumped/{efo_id}.log")
     output:
-        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/EFO_0004339.csv")
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/{efo_id}.csv")
     log:
-        os.path.join(config["log_dir"], "get_ref_mafs/{date}/EFO_0004339.log")
+        os.path.join(config["log_dir"], "get_ref_mafs/{date}/{efo_id}.log")
     params:
         percent_interval = config["percent_interval"]
     resources:
@@ -64,11 +65,11 @@ rule get_ref_mafs:
 
 rule get_control_snps:
     input:
-        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/EFO_0004339.csv")
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/{efo_id}.csv")
     output:
-        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/CONTROL.txt")
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/{efo_id}.txt")
     log:
-        os.path.join(config["log_dir"], "get_control_snps/{date}/CONTROL.log")
+        os.path.join(config["log_dir"], "get_control_snps/{date}/{efo_id}.log")
     run:
         df = pd.read_csv(input[0])
         df['CONTROL_ID'].to_csv(output[0], header = False, index = False)
@@ -76,11 +77,11 @@ rule get_control_snps:
 rule get_control_vcf_chr:
     input:
         vcf = os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
-        snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/CONTROL.txt")
+        snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/{efo_id}.txt")
     output:
-        os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/CONTROL/by_chr/{chr}.vcf.gz")
+        os.path.join(config["working_dir"], "vcfs/1kg/20150319/controls/{date}/{efo_id}/by_chr/{chr}.vcf.gz")
     log:
-        os.path.join(config["log_dir"], "get_control_vcf_chr/{date}/CONTROL/{chr}.log")
+        os.path.join(config["log_dir"], "get_control_vcf_chr/{date}/{efo_id}/{chr}.log")
     container:
         config["bcftools"]
     shell:
@@ -94,12 +95,12 @@ rule get_control_vcf_chr:
 
 rule merge_control_vcf:
     input:
-        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{{date}}/CONTROL/by_chr/{chr}.vcf.gz"),
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/controls/{{date}}/{{efo_id}}/by_chr/{chr}.vcf.gz"),
             chr = CHRS)
     output:
-        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/CONTROL.vcf.gz")
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/controls/{efo_id}.vcf.gz")
     log:
-        os.path.join(config["log_dir"], "merge_control_vcf/{date}/CONTROL.log")
+        os.path.join(config["log_dir"], "merge_control_vcf/{date}/{efo_id}.log")
     container:
         config["bcftools"]
     shell:

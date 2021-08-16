@@ -56,10 +56,10 @@ rule get_snp_ids:
 
 rule extract_gtypes:
     input:
-        vcf = os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
+        vcf = os.path.join(config["lts_dir"], "vcfs/1kg/20201028/2504_samples/{chr}.vcf.gz"),
         snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/associations_snp_ids/{efo_id}.txt")
     output:
-        os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz")
+        os.path.join(config["working_dir"], "vcfs/1kg/20201028/filtered/{date}/{efo_id}/by_chr/{chr}.vcf.gz")
     log:
         os.path.join(config["log_dir"], "extract_gtypes/{date}/{efo_id}/{chr}.log")
     container:
@@ -76,10 +76,10 @@ rule extract_gtypes:
 
 rule merge_gtypes:
     input:
-        expand(os.path.join(config["working_dir"], "vcfs/1kg/20150319/filtered/{{date}}/{{efo_id}}/by_chr/{chr}.vcf.gz"),
+        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/filtered/{{date}}/{{efo_id}}/by_chr/{chr}.vcf.gz"),
             chr = CHRS)
     output:
-        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/original/{efo_id}.vcf.gz")
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/original/{efo_id}.vcf.gz")
     log:
         os.path.join(config["log_dir"], "merge_gtypes/{date}/{efo_id}.log")
     container:
@@ -95,10 +95,10 @@ rule merge_gtypes:
 # Remove duplicated variants to avoid problems downstream with Plink1.9
 rule get_duplicated_sites:
     input:
-        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/original/{efo_id}.vcf.gz")
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/original/{efo_id}.vcf.gz")
     output:
-        dup_sites = os.path.join(config["lts_dir"], "gwasrapidd/{date}/dup_sites/{efo_id}.txt"),
-        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/vcfs/no_dups/{efo_id}.vcf.gz")
+        dup_sites = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/dup_sites/{efo_id}.txt"),
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/no_dups/{efo_id}.vcf.gz")
     log:
         os.path.join(config["log_dir"], "get_duplicated_sites/{date}/{efo_id}.log")
     container:
