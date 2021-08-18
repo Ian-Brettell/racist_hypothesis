@@ -24,20 +24,21 @@ GZ_EXTS = config["gz_exts"]
 traits = pd.read_table(config["all_trait_ids_file"])
 EFO_IDS = traits['efo_id']
 
-filtered_traits = pd.read_table(config["filt_trait_ids_file"])
-EFO_IDS_FILT = filtered_traits['efo_id']
+# Filtered traits (2045/3459 which had >= 1 SNP after clumping)
+filt_traits = pd.read_table(config["filt_trait_ids_file"])
+EFO_IDS_FILT = filt_traits["EFO_ID"]
 
-# Get additional traits (that had fewer than 50 unique SNP associations)
-additional_traits = traits.loc[traits['trait'].isin(config["additional_traits"]), 'efo_id'].tolist()
+## Get additional traits (that had fewer than 50 unique SNP associations)
+#additional_traits = traits.loc[traits['trait'].isin(config["additional_traits"]), 'efo_id'].tolist()
+#
+## Append to list of filtered traits
+#EFO_IDS_FILT_PLUS = EFO_IDS_FILT.tolist() + additional_traits
 
-# Append to list of filtered traits
-EFO_IDS_FILT_PLUS = EFO_IDS_FILT.tolist() + additional_traits
-
-# Add control
-EFO_IDS_FILT_PLUS_CONTROL = EFO_IDS_FILT_PLUS + ["CONTROL"]
-
-EFO_IDS_PLUS_CONTROL = EFO_IDS.tolist() + ["CONTROL"]
-
+## Add control
+#EFO_IDS_FILT_PLUS_CONTROL = EFO_IDS_FILT_PLUS + ["CONTROL"]
+#
+#EFO_IDS_PLUS_CONTROL = EFO_IDS.tolist() + ["CONTROL"]
+#
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 FTP = FTPRemoteProvider()
 

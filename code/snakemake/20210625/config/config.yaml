@@ -12,14 +12,14 @@ tmp_dir:
 #####################
 # Variables
 #####################
-trait_ids_file:
-    code/snakemake/20210625/config/trait_ids.tsv
+#trait_ids_file:
+#    code/snakemake/20210625/config/trait_ids.tsv
 all_trait_ids_file:
     code/snakemake/20210625/config/20210809_all_traits.tsv
 filt_trait_ids_file:
-    code/snakemake/20210625/config/20210809_filtered_traits.tsv
-additional_traits:
-    - COVID-19
+    code/snakemake/20210625/config/20210809_filtered_traits.txt
+#additional_traits:
+#    - COVID-19
 contigs:
     - 1
     - 2
