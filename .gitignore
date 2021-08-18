@@ -4,3 +4,4 @@
 .Ruserdata
 .snakemake
 .RData*
+.nfs*
