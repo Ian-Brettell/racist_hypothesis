@@ -130,7 +130,9 @@ rule get_fst_hits:
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/hits/{efo_id}.rds")
     log:
-        os.path.join(config["log_dir"], "get_fst/{date}/{efo_id}.log")
+        os.path.join(config["log_dir"], "get_fst_hits/{date}/{efo_id}.log")
+    resources:
+        mem_mb = 10000
     container:
         config["R"]
     script:
@@ -143,7 +145,9 @@ rule get_fst_controls:
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/controls/{efo_id}.rds")
     log:
-        os.path.join(config["log_dir"], "get_fst/{date}/{efo_id}.log")
+        os.path.join(config["log_dir"], "get_fst_controls/{date}/{efo_id}.log")
+    resources:
+        mem_mb = 10000
     container:
         config["R"]
     script:

@@ -20,16 +20,23 @@ library(tidyverse)
 
 # Read in files
 
+## All 1KG snps
 all_mafs_df = readr::read_csv(all_mafs,
                               col_types = c("cicccddddd"))
+## Filter out...
+all_mafs_df = all_mafs_df %>%
+    # missing IDs
+    dplyr::filter(ID != ".") %>%
+    # multiple IDs
+    dplyr::filter(!(grepl(";", ID)))
 
+## Trait reference SNPs
 ref_snps_df = readr::read_delim(ref_snps,
                                 delim = " ",
                                 col_types = "--c---------",
                                 trim_ws = T)
 
 # Bin by 5% MAF intervals based on AF_EUR
-#test = all_mafs_df %>% dplyr::slice_sample(n = 10000)
 
 ## Set breaks
 breaks = seq(0, 1, by = (percent_interval / 100))
@@ -65,5 +72,3 @@ purrr::map_dfr(1:nrow(ref_mafs), function(i){
     return(out)
 }) %>%
     readr::write_csv(out_file)
-
-save.image()

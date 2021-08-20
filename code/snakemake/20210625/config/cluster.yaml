@@ -3,9 +3,14 @@ __default__:
   n: 1
   name: "{rule}.{wildcards}"
   outfile: "{log}"
+get_ref_mafs:
+  memory: "{resources.mem_mb}"
+get_fst_hits:
+  memory: "{resources.mem_mb}" 
+get_fst_controls:
+  memory: "{resources.mem_mb}" 
 consolidate_fst_hits:
   memory: "{resources.mem_mb}" 
 consolidate_fst_controls:
   memory: "{resources.mem_mb}" 
-get_ref_mafs:
-  memory: "{resources.mem_mb}" 
+

@@ -6,7 +6,7 @@ cd /hps/software/users/birney/ian/repos/human_traits_fst
 conda activate snakemake_6.6.1
 smk_proj="20210625"
 snakemake \
-  --jobs 1500 \
+  --jobs 5000 \
   --latency-wait 300 \
   --cluster-config code/snakemake/$smk_proj/config/cluster.yaml \
   --cluster 'bsub -g /snakemake_bgenie -J {cluster.name} -n {cluster.n} -M {cluster.memory} -o {cluster.outfile}' \
