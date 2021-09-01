@@ -18,6 +18,25 @@ library(here)
 source(here::here("code/scripts/20210628_source.R"))
 ```
 
+# 9 August 2021
+
+Now using high coverage data aligned to GRCh38 (https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased) instead of variants lifted over from GRCh37 (https://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype).
+
+**Reason**: known issues in liftovers. The readme for the lifted-over variants here: http://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype/README_GRCh38_genotypes.20170504 refers to the original README here: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/GRCh38_positions/README_GRCh38_liftover_20170504.txt, which sets out the issues.
+
+Compare number of annotated SNPs:
+```{bash, eval = F}
+# Old
+tail -n+2 mafs/1kg/20150319/all/all.csv | cut -f3 -d',' | grep -v "\." | wc -l
+## 76734695
+
+# New
+tail -n+2 mafs/1kg/20201028/all/all.csv | cut -f3 -d',' | grep -v "\." | wc -l
+## 66809807
+```
+
+So about 10M more SNPs in the old version.
+
 # 5 August 2021
 
 **Meeting with Ewan**

@@ -31,6 +31,7 @@ source(here::here("code/scripts/20210628_source.R"))
 
 ## Traits
 
+**NOTE**: only run once.
 ```{r, eval = F}
 date_of_collection = "20210809"
 long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
@@ -57,6 +58,7 @@ all_traits_tbl = readr::read_tsv(out_file)
 
 ## Associations
 
+**NOTE**: only run once.
 ```{r, eval = F}
 #Need to do them sequentially because the GWAS Catalog can't handle dozens (let alone thousands) of simultaneous queries.
 date_of_collection = "20210809"
@@ -84,6 +86,8 @@ lapply(all_traits_tbl$efo_id, function(EFO_ID) {
   }
 })
 ```
+
+<!--
 
 ## Read in associations and filter for those with more than 50 unique SNPs
 
@@ -124,25 +128,128 @@ out_file = here::here("code/snakemake/20210625/config",
 all_traits_tbl = readr::read_tsv(out_file)
 ```
 
+-->
+
 # Run Snakemake pipeline to extract data
 
 Full Snakemake pipeline here: <https://github.com/brettellebi/human_traits_fst/tree/master/code/snakemake/20210625>
 
 # Read in processed data
 
+## Specify target directory
+
 ```{r}
 target_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd/20210809"
+```
 
-# Fst
-fst_all_path = file.path(target_dir, "pegas/fst/consol/all.rds")
-fst_all = readRDS(fst_all_path) %>%
+## Total initial counts
+
+```{r}
+assocs_path = file.path(target_dir, "associations_raw")
+
+assocs_files = list.files(assocs_path, full.names = T)
+
+# Read in associations
+assocs_raw = lapply(assocs_files, function(EFO_ID){
+  readRDS(EFO_ID)
+})
+
+names(assocs_raw) = basename(assocs_files) %>% 
+  stringr::str_remove(".rds")
+
+# Get counts
+raw_counts = purrr::map(assocs_raw, function(EFO_ID){
+  EFO_ID@risk_alleles %>%
+    dplyr::pull(variant_id) %>% 
+    unique(.) %>% 
+    length(.) %>% 
+    data.frame("N" = .)
+}) %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  # Add `trait`
+  dplyr::left_join(all_traits_tbl %>% 
+                     dplyr::select(efo_id, trait),
+                   by = c("EFO_ID" = "efo_id")) %>% 
+  # Rename to `TRAIT`
+  dplyr::rename(TRAIT = trait) %>% 
+  # Remove all traits with N < 1
+  dplyr::filter(N >= 1)
+
+# How many traits have more than 1 SNP in their raw associations?
+nrow(raw_counts)
+```
+
+## Hits
+
+Set minimum number of "independent" (i.e. post-clumped) SNPs per trait
+
+```{r}
+min_snps = 20
+```
+
+```{r}
+hits_path = file.path(target_dir, "pegas/fst/consol/hits.rds")
+hits = readRDS(hits_path) %>%
   lapply(., function(TRAIT_ID){
     # convert to DF
     TRAIT_ID %>%
         data.frame(.) %>% 
         tibble::rownames_to_column(var = "SNP") %>% 
         dplyr::select(SNP, FST_PEGAS = Fst)
-  })
+  }) %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  dplyr::left_join(all_traits_tbl %>% 
+                     dplyr::select(EFO_ID = efo_id,
+                                   TRAIT = trait),
+                   by = "EFO_ID")
+
+# Get counts
+hits_counts = hits %>% 
+  dplyr::count(EFO_ID, TRAIT) %>% 
+  dplyr::rename(N = n)
+
+# Get vector of EFO_IDs with more than `min_snps`
+keep_snps = hits %>%
+  dplyr::count(EFO_ID) %>%
+  dplyr::filter(n >= min_snps) %>% 
+  dplyr::pull(EFO_ID)
+
+# How many traits pass threshold
+length(keep_snps)
+
+# Filter hits for those traits
+hits_filt = hits %>% 
+  dplyr::filter(EFO_ID %in% keep_snps)
+
+```
+
+## Controls
+
+```{r}
+# Fst controls
+controls_path = file.path(target_dir, "pegas/fst/consol/controls.rds")
+controls = readRDS(controls_path) %>%
+  lapply(., function(TRAIT_ID){
+    # convert to DF
+    TRAIT_ID %>%
+        data.frame(.) %>% 
+        tibble::rownames_to_column(var = "SNP") %>% 
+        dplyr::select(SNP, FST_PEGAS = Fst)
+  }) %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  dplyr::left_join(all_traits_tbl %>% 
+                     dplyr::select(EFO_ID = efo_id,
+                                   TRAIT = trait),
+                   by = "EFO_ID")
+
+# Filter controls for traits with more than `min_snps` post-clumping
+controls_filt = controls %>% 
+  dplyr::filter(EFO_ID %in% keep_snps)
+```
+
+<!--
+
+```{r}
 
 # Bind into df
 fst_all_df = fst_all %>% 
@@ -192,29 +299,28 @@ fst_clumped_df = rbind(fst_clumped_df,
 
 ```
 
+-->
+
 ## Add palette based on pre-clump SNP count
 
 ```{r}
-pal_all = turbo(n = length(unique(fst_all_df$EFO_ID)))
-names(pal_all) = fst_all_df %>% 
-  dplyr::count(TRAIT) %>% 
-  dplyr::arrange(desc(n)) %>% 
+pal_all = turbo(n = nrow(raw_counts))
+names(pal_all) = raw_counts %>% 
+  dplyr::arrange(desc(N)) %>% 
   dplyr::pull(TRAIT)
 ```
 
 # SNP counts pre- and post-clumping
 
-```{r, out.width = '150%'}
-snp_count_plot = list("PRE-CLUMP" = fst_all_df,
-                      "POST-CLUMP" = fst_clumped_df) %>% 
+```{r, out.width = '200%'}
+snp_count_plot = list("PRE-CLUMP" = raw_counts,
+                      "POST-CLUMP" = hits_counts) %>% 
   dplyr::bind_rows(.id = "FILTER") %>% 
-  # remove CONTROL SNPs
-  dplyr::filter(TRAIT != "control") %>% 
   # order variables
   dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_all)),
                 FILTER = factor(FILTER, levels = c("PRE-CLUMP", "POST-CLUMP"))) %>% 
   ggplot() +
-    geom_bar(aes(TRAIT, fill = TRAIT)) +
+    geom_col(aes(TRAIT, N, fill = TRAIT)) +
     scale_fill_manual(values = pal_all) +
     theme_bw() +
     theme(axis.text.x = element_blank(),
@@ -225,14 +331,14 @@ snp_count_plot = list("PRE-CLUMP" = fst_all_df,
     guides(fill = "none")
 
 plotly::ggplotly(snp_count_plot,
-                 tooltip = c("TRAIT", "y"))
+                 tooltip = c("TRAIT"))
 ```
 
 ```{r, eval = F}
-width = 12
+width = 20
 height = 10
 
-ggsave(here::here("docs/plots/20210810_snp_counts.png"),
+ggsave(here::here("docs/plots/20210901_snp_counts.png"),
        plot = snp_count_plot,
        device = "png",
        width = width,
@@ -240,7 +346,7 @@ ggsave(here::here("docs/plots/20210810_snp_counts.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20210810_snp_counts.svg"),
+ggsave(here::here("docs/plots/20210901_snp_counts.svg"),
        plot = snp_count_plot,
        device = "svg",
        width = width,
@@ -254,41 +360,103 @@ ggsave(here::here("docs/plots/20210810_snp_counts.svg"),
 ## Traits ordered by median Fst, with number of loci
 
 ```{r}
-fst_clumped_df %>% 
+# Using `hits_filt` -- the traits with >= 5 SNPs
+hits_filt %>% 
   dplyr::group_by(TRAIT) %>% 
   dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
                    N_LOCI = dplyr::n()) %>% 
-  dplyr::arrange(MEDIAN_FST) %>% 
+  dplyr::arrange(dplyr::desc(MEDIAN_FST)) %>% 
   DT::datatable(.)
 ```
 
 ## New palette for clumped traits
 
 ```{r}
-## Add palette based on median Fst
-od_clumped_traits = c("control",
-                     fst_clumped_df %>% 
-                       dplyr::filter(TRAIT != "control") %>% 
-                       dplyr::group_by(TRAIT) %>% 
-                       dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
-                       dplyr::arrange(MEDIAN_FST) %>% 
-                       dplyr::pull(TRAIT)
-                     )
-pal_clump = c("#6d6a75",
-              turbo(n = length(od_clumped_traits) - 1)
-              )
-names(pal_clump) = od_clumped_traits
+# set number of colours in gradient
+n_cols = 100
 ```
+
+
+### Based on rank
+
+```{r}
+# by median
+rank_fst = hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  dplyr::pull(TRAIT)
+
+rank_pal = turbo(n = length(rank_fst))
+names(rank_pal) = rank_fst
+
+# By 90 percentile
+rank_fst = hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = quantile(FST_PEGAS, probs = 0.9, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  dplyr::pull(TRAIT)
+
+rank_pal = turbo(n = length(rank_fst))
+names(rank_pal) = rank_fst
+```
+
+### Based on Median Fst on continous scale
+
+```{r}
+# create new palette based on median Fst
+median_fst = hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>%
+  # add negative log
+  dplyr::mutate(MEDIAN_FST_ADJ = dplyr::if_else(MEDIAN_FST <= 0, 1e-3, MEDIAN_FST),
+                MEDIAN_FST_NL = -log(MEDIAN_FST_ADJ))
+
+# Get min and max to build palette
+bins = seq(min(median_fst$MEDIAN_FST),
+           max(median_fst$MEDIAN_FST),
+           length.out = n_cols + 1)
+
+log_bins = seq(min(median_fst$MEDIAN_FST_NL),
+               max(median_fst$MEDIAN_FST_NL),
+               length.out = n_cols + 1)
+
+# Create tibble of palette
+ord_pal_df = tibble::tibble(COLOUR = turbo(n = n_cols),
+                            COLOUR_LOG = turbo(n = n_cols),
+                            COLOUR_BIN = seq(1, n_cols),
+                            COLOUR_BIN_LOG = rev(seq(1, n_cols)))
+
+
+# Add `COLOUR_BIN` and `COLOUR`
+median_fst = median_fst %>% 
+  dplyr::mutate(COLOUR_BIN = cut(MEDIAN_FST, breaks = bins, labels = F, include.lowest = T),
+                COLOUR_BIN_LOG = cut(MEDIAN_FST_NL, breaks = log_bins, labels = F, include.lowest = T)) %>% 
+  dplyr::left_join(ord_pal_df %>% 
+                     dplyr::select(COLOUR, COLOUR_BIN),
+                   by = "COLOUR_BIN") %>% 
+  dplyr::left_join(ord_pal_df %>% 
+                     dplyr::select(COLOUR_LOG, COLOUR_BIN_LOG),
+                   by = "COLOUR_BIN_LOG")
+
+ord_pal = median_fst$COLOUR
+names(ord_pal) = median_fst$TRAIT
+
+ord_pal_log = median_fst$COLOUR_LOG
+names(ord_pal_log) = median_fst$TRAIT
+```
+
 
 ## Plot all
 
 ```{r, eval = F}
-ecdf_all_faceted = fst_clumped_df %>% 
+ecdf_all_faceted = hits_filt %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_clump))) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal))) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
-    scale_colour_manual(values = pal_clump) +
+    scale_colour_manual(values = rank_pal) +
     theme_bw() +
     ggtitle("eCDF") +
     xlab(expression(italic(F[ST]))) +
@@ -296,7 +464,7 @@ ecdf_all_faceted = fst_clumped_df %>%
     guides(colour = "none") +
     theme(strip.text.x = element_text(size = 4.5))
 
-ggsave(here::here("docs/plots/20210810_ecdf_all_faceted.png"),
+ggsave(here::here("docs/plots/20210901_ecdf_all_faceted.png"),
        plot = ecdf_all_faceted, 
        device = "png",
        width = 30,
@@ -306,7 +474,7 @@ ggsave(here::here("docs/plots/20210810_ecdf_all_faceted.png"),
 ```
 
 ```{r, out.width='150%'}
-knitr::include_graphics(here::here("docs/plots/20210810_ecdf_all_faceted.png"))
+knitr::include_graphics(here::here("docs/plots/20210901_ecdf_all_faceted.png"))
 ```
 
 ## Plotly
@@ -314,18 +482,14 @@ knitr::include_graphics(here::here("docs/plots/20210810_ecdf_all_faceted.png"))
 ### All
 
 ```{r, out.width = '175%'}
-plotly_ecdf_all = fst_clumped_df %>% 
+plotly_ecdf_all = hits_filt %>% 
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
-  dplyr::group_by(EFO_ID) %>%
-  # filter for those with >0 SNPs in the clumped dataset
-  dplyr::filter(EFO_ID %in% unique(fst_clumped_df$EFO_ID)) %>% 
-  dplyr::ungroup() %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_clump))) %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal))) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
-    scale_colour_manual(values = pal_clump) +
+    scale_colour_manual(values = rank_pal) +
     theme_bw() +
     ggtitle("eCDF") +
     guides(colour = "none") +
@@ -341,7 +505,8 @@ Select interesting traits
 
 ```{r, out.width='150%'}
 # get traits to look closer at
-target_traits = c("control",
+target_traits = c("total cholesterol measurement",
+                  "late-onset Alzheimers disease",
                   "body height",
                   "body mass index",
                   "mathematical ability",
@@ -373,37 +538,29 @@ target_traits = c("control",
                   "COVID-19"
                   )
 
-# create new palette based on median Fst
-od_target_traits = fst_clumped_df %>% 
-  dplyr::filter(TRAIT %in% target_traits) %>% 
-  dplyr::group_by(TRAIT) %>% 
-  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
-  dplyr::arrange(MEDIAN_FST) %>% 
-  dplyr::pull(TRAIT)
-pal_target = c("#6d6a75",
-              turbo(n = length(od_target_traits) - 1)
-             )
-names(pal_target) = od_target_traits
 
 
-plotly_ecdf_select = fst_clumped_df %>%
+plotly_ecdf_select = hits_filt %>%
   # filter for `target_traits`
   dplyr::filter(TRAIT %in% target_traits) %>%
-  # take unique SNPs
-  dplyr::group_by(EFO_ID) %>%
-  dplyr::distinct(SNP, .keep_all = T) %>% 
-  dplyr::ungroup() %>% 
+  # add `MEDIAN_FST` %>% 
+  dplyr::left_join(median_fst,
+                   by = "TRAIT") %>% 
+#  # take unique SNPs
+#  dplyr::group_by(EFO_ID) %>%
+#  dplyr::distinct(SNP, .keep_all = T) %>% 
+#  dplyr::ungroup() %>% 
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
   # order
-  dplyr::mutate(TRAIT = factor(TRAIT, levels = od_target_traits)) %>% 
-  ggplot() +
-    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
-    scale_colour_manual(values = pal_target) +
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal))) %>% 
+  ggplot(aes(FST_PEGAS, colour = TRAIT)) +
+    stat_ecdf() +
+    #scale_colour_gradientn(colours = turbo(100)) +
+    scale_colour_manual(values = rank_pal) +
     theme_bw() +
     ggtitle("eCDF") +
-    guides(colour = "none") +
-    theme(strip.text.x = element_text(size = 5))
+    guides(colour = "none")
 
 plotly::ggplotly(plotly_ecdf_select,
                  tooltip = c("TRAIT"))
