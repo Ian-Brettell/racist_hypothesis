@@ -54,6 +54,9 @@ out_file = here::here("code/snakemake/20210625/config",
                       paste(date_of_collection, "_all_traits.tsv", sep = ""))
 
 all_traits_tbl = readr::read_tsv(out_file)
+
+all_traits_tbl %>% 
+  DT::datatable(.)
 ```
 
 ## Associations
@@ -175,8 +178,8 @@ raw_counts = purrr::map(assocs_raw, function(EFO_ID){
   # Remove all traits with N < 1
   dplyr::filter(N >= 1)
 
-# How many traits have more than 1 SNP in their raw associations?
-nrow(raw_counts)
+raw_counts %>% 
+  DT::datatable(.)
 ```
 
 ## Hits
@@ -207,6 +210,9 @@ hits = readRDS(hits_path) %>%
 hits_counts = hits %>% 
   dplyr::count(EFO_ID, TRAIT) %>% 
   dplyr::rename(N = n)
+
+hits_counts %>% 
+  DT::datatable(.)
 
 # Get vector of EFO_IDs with more than `min_snps`
 keep_snps = hits %>%
@@ -377,28 +383,32 @@ n_cols = 100
 ```
 
 
-### Based on rank
+### Based on **rank**
 
 ```{r}
 # by median
-rank_fst = hits_filt %>% 
+rank_fst_50 = hits_filt %>% 
   dplyr::group_by(TRAIT) %>% 
   dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
   dplyr::arrange(MEDIAN_FST) %>% 
   dplyr::pull(TRAIT)
 
-rank_pal = turbo(n = length(rank_fst))
-names(rank_pal) = rank_fst
+rank_pal_50 = turbo(n = length(rank_fst_50))
+names(rank_pal_50) = rank_fst_50
+
 
 # By 90 percentile
-rank_fst = hits_filt %>% 
+rank_fst_90 = hits_filt %>% 
   dplyr::group_by(TRAIT) %>% 
   dplyr::summarise(MEDIAN_FST = quantile(FST_PEGAS, probs = 0.9, na.rm = T)) %>% 
   dplyr::arrange(MEDIAN_FST) %>% 
   dplyr::pull(TRAIT)
 
-rank_pal = turbo(n = length(rank_fst))
-names(rank_pal) = rank_fst
+rank_pal_90 = turbo(n = length(rank_fst_90))
+names(rank_pal_90) = rank_fst_90
+
+# Look at scale by rank
+scales::show_col(rank_pal_50, labels = F)
 ```
 
 ### Based on Median Fst on continous scale
@@ -410,7 +420,7 @@ median_fst = hits_filt %>%
   dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
   dplyr::arrange(MEDIAN_FST) %>%
   # add negative log
-  dplyr::mutate(MEDIAN_FST_ADJ = dplyr::if_else(MEDIAN_FST <= 0, 1e-3, MEDIAN_FST),
+  dplyr::mutate(MEDIAN_FST_ADJ = ifelse(MEDIAN_FST <= 0, NA, MEDIAN_FST),
                 MEDIAN_FST_NL = -log(MEDIAN_FST_ADJ))
 
 # Get min and max to build palette
@@ -418,8 +428,8 @@ bins = seq(min(median_fst$MEDIAN_FST),
            max(median_fst$MEDIAN_FST),
            length.out = n_cols + 1)
 
-log_bins = seq(min(median_fst$MEDIAN_FST_NL),
-               max(median_fst$MEDIAN_FST_NL),
+log_bins = seq(min(median_fst$MEDIAN_FST_NL, na.rm = T),
+               max(median_fst$MEDIAN_FST_NL, na.rm = T),
                length.out = n_cols + 1)
 
 # Create tibble of palette
@@ -443,10 +453,15 @@ median_fst = median_fst %>%
 ord_pal = median_fst$COLOUR
 names(ord_pal) = median_fst$TRAIT
 
+scales::show_col(ord_pal, labels = F)
+
 ord_pal_log = median_fst$COLOUR_LOG
 names(ord_pal_log) = median_fst$TRAIT
+
+scales::show_col(ord_pal_log, labels = F)
 ```
 
+Just use rank? 
 
 ## Plot all
 

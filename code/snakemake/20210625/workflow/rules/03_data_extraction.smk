@@ -52,6 +52,37 @@ rule clump_snps:
 # For this reason, we have specified the `*.log` file as the output,
 # So that it doesn't cause the snakemake process to fail.
 
+rule pull_clumped_ids:
+    input:
+        log = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/plink/clumped/{efo_id}.log"),
+        clumped = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/plink/clumped/{efo_id}.clumped")
+    output:
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/top_clumped/{efo_id}.txt")
+    container:
+        config["bash"]
+    shell:
+        """
+        cat {input.clumped} | tr -s ' ' | cut -f4 -d' ' | tail -n+2 \
+            > {output}
+        """
+
+rule extract_top_clumped:
+    input:
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/no_dups/{efo_id}.vcf.gz"),
+        snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/top_clumped/{efo_id}.txt")
+    output:
+        os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/hits/{efo_id}.vcf.gz")
+    container:
+        config["bcftools"]
+    shell:
+        """
+        bcftools view \
+            --include ID=@{input.snps} \
+            --output-type z \
+            --output-file {output} \
+            {input.vcf}        
+        """
+
 rule get_ref_mafs:
     input:
         all_mafs = os.path.join(config["lts_dir"], "mafs/1kg/20201028/all/all.csv"),
@@ -125,7 +156,7 @@ ruleorder: merge_control_vcf > get_duplicated_sites
 
 rule get_fst_hits:
     input:
-        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/no_dups/{efo_id}.vcf.gz"),
+        vcf = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/hits/{efo_id}.vcf.gz"),
         pop_file = config["local_pop_file"]
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/hits/{efo_id}.rds")
