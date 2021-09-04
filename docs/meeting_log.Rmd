@@ -42,7 +42,7 @@ So there are about 10M fewer annotated SNPs in the new version.
 * 3549 traits in GWAS Catalog at data of collection (9 August 2021)
 * 2961 traits with at least 1 SNP association
 * 2045 traits with at least 1 SNP post-clumping
-* 880 traits with at least 20 SNPs post-clumping
+* 587 traits with at least 10 SNPs post-clumping
 
 # 5 August 2021
 

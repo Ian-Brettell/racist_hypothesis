@@ -94,12 +94,12 @@ rule all:
 # pull_clumped_ids
         expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/top_clumped/{efo_id}.txt"),
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_FILT[0]
+            efo_id = EFO_IDS_FILT
         ),
 # extract_top_clumped
         expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/hits/{efo_id}.vcf.gz"),
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_FILT[0]
+            efo_id = EFO_IDS_FILT
         ),
 # get_ref_mafs
         expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/{efo_id}.csv"),
@@ -125,17 +125,17 @@ rule all:
 # get_fst_hits
         expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/hits/{efo_id}.rds"),
             date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_FILT[0]
+            efo_id = EFO_IDS_FILT
         ),
 # get_fst_controls
         expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/controls/{efo_id}.rds"),    
             date = DATE_OF_COLLECTION,
             efo_id = EFO_IDS_FILT
         ),
-## consolidate_fst_hits
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/hits.rds"),
-#            date = DATE_OF_COLLECTION
-#        ),
+# consolidate_fst_hits
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/hits.rds"),
+            date = DATE_OF_COLLECTION
+        ),
 # consolidate_fst_controls
         expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/controls.rds"),
             date = DATE_OF_COLLECTION

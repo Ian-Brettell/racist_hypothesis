@@ -58,6 +58,8 @@ rule pull_clumped_ids:
         clumped = os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/plink/clumped/{efo_id}.clumped")
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/top_clumped/{efo_id}.txt")
+    log:
+        os.path.join(config["log_dir"], "pull_clumped_ids/{date}/{efo_id}.log")
     container:
         config["bash"]
     shell:
@@ -72,6 +74,8 @@ rule extract_top_clumped:
         snps = os.path.join(config["lts_dir"], "gwasrapidd/{date}/top_clumped/{efo_id}.txt")
     output:
         os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/hits/{efo_id}.vcf.gz")
+    log:
+        os.path.join(config["log_dir"], "extract_top_clumped/{date}/{efo_id}.log")
     container:
         config["bcftools"]
     shell:
