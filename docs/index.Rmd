@@ -779,7 +779,51 @@ ks_out = purrr::map(ks_list, function(TRAIT){
           TRAIT$CONTROL$FST_PEGAS,
           alternative = "two.sided")
 })
+```
 
+#### With p-value
+
+```{r}
+# Pull out statistics
+ks_stats = purrr::map_dfr(ks_out, function(TRAIT){
+  tibble::tibble(D = TRAIT$statistic,
+                 p_value = TRAIT$p.value)
+}, .id = "TRAIT")
+
+# Wrangle
+ks_stats = ks_stats %>% 
+  # Add negative log column
+  dplyr::mutate("-log10(p-value)" = -log(p_value)) %>% 
+  # Remove p_value
+  dplyr::select(!p_value) %>% 
+  # Pivot statistics into single column
+  tidyr::pivot_longer(cols = c("D", "-log10(p-value)"),
+                      names_to = "STATISTIC",
+                      values_to = "VALUE")
+
+filt_traits_fac = names(rank_pal_50)[names(rank_pal_50) %in% ks_stats$TRAIT]
+# Plot
+ks_plot = ks_stats %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = filt_traits_fac),
+                STATISTIC = factor(STATISTIC, levels = c("D", "-log10(p-value)"))) %>% 
+  ggplot() +
+    geom_col(aes(TRAIT, VALUE, fill = TRAIT)) +
+    scale_fill_manual(values = rank_pal_50) +
+    theme_cowplot() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 5)) +
+    #theme(axis.title.x=element_blank(),
+    #      axis.text.x=element_blank(),
+    #      axis.ticks.x=element_blank()) +
+    guides(fill = "none") +
+    facet_grid(rows = vars(STATISTIC), scales = "free")
+
+#ggplotly(ks_plot, tooltip = c("x", "y"))
+ks_plot
+```
+
+#### Without p-value
+
+```{r}
 # Pull out statistic
 ks_stats = purrr::map_dfr(ks_out, function(TRAIT){
   TRAIT$statistic
@@ -799,6 +843,7 @@ ks_plot = ks_stats %>%
 
 ggplotly(ks_plot, tooltip = c("x", "y"))
 ```
+
 
 
 ```{r}
