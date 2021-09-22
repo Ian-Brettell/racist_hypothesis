@@ -18,6 +18,14 @@ library(here)
 source(here::here("code/scripts/20210628_source.R"))
 ```
 
+# 22 September 2021
+
+To discuss:
+* Colour scale based on ranked median Fst
+* Confirm use of Biobank data for height distribution comparisons
+* Alternative to p-value for KS-test comparisons
+* Harden's new book
+
 # 9 August 2021
 
 Now using high coverage data aligned to GRCh38 (https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased) instead of variants lifted over from GRCh37 (https://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype).
