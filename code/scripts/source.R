@@ -12,6 +12,7 @@ library(knitr)
 library(ggridges)
 library(gwasrapidd)
 library(cowplot)
+library(ggpubr)
 
 #############################
 # Paths

@@ -18,6 +18,10 @@ library(here)
 source(here::here("code/scripts/20210628_source.R"))
 ```
 
+# 30 September 2021
+
+* How to add stars: <https://rpkgs.datanovia.com/ggpubr/reference/stat_pvalue_manual.html>
+
 # 22 September 2021
 
 To discuss:

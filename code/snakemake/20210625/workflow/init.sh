@@ -21,7 +21,9 @@ snakemake \
 # For R
 
 ## Create singularity container on Codon (from `human_traits_fst` repo)
-singularity build --remote /hps/software/users/birney/ian/containers/R_4.1.0.sif /hps/software/users/birney/ian/repos/human_traits_fst/code/snakemake/20210625/workflow/envs/r_4.1.0/r_4.1.0.def
+singularity build --remote \
+      /hps/software/users/birney/ian/containers/R_4.1.0.sif \
+      /hps/software/users/birney/ian/repos/human_traits_fst/code/snakemake/20210625/workflow/envs/r_4.1.0/r_4.1.0.def
 
 ssh proxy-codon
 module load singularity-3.7.0-gcc-9.3.0-dp5ffrp

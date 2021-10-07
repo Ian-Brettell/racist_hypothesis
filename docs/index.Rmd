@@ -765,7 +765,7 @@ ecdf_plot_face
 
 ### Calculate KS test comparing between the distributions of hits and controls
 
-```{r, fig.cap = "D statistic from KS test comparing distributions of hits vs controls", out.width='150%'}
+```{r}
 # Split into list by trait
 ks_list = hits_v_controls %>% 
   split(., f = .$TRAIT) %>% 
@@ -823,7 +823,7 @@ ks_plot
 
 #### Without p-value
 
-```{r}
+```{r, fig.cap = "D statistic from KS test comparing distributions of hits vs controls", out.width='150%'}
 # Pull out statistic
 ks_stats = purrr::map_dfr(ks_out, function(TRAIT){
   TRAIT$statistic

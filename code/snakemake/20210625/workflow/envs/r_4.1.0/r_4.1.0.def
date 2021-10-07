@@ -18,16 +18,17 @@ apt install -y libgdal-dev libudunits2-dev libglpk40 libxtst6
 
 # Install CRAN packages
 install2.r --error \
-here \
-Rcpp \
-pegas \
-knitr \
-ggridges \
-cowplot \
-remotes \
-plotly \
-DT \
-svglite
+    here \
+    Rcpp \
+    pegas \
+    knitr \
+    ggridges \
+    cowplot \
+    remotes \
+    plotly \
+    DT \
+    svglite \
+    ggpubr
 
 # Install `gwasrapidd`
 R -e "remotes::install_github('ramiromagno/gwasrapidd')"
