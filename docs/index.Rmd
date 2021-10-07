@@ -301,8 +301,37 @@ hits_filt %>%
   dplyr::group_by(TRAIT) %>% 
   dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
                    N_LOCI = dplyr::n()) %>% 
-  dplyr::arrange(dplyr::desc(MEDIAN_FST)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  # get rank
+  dplyr::mutate(RANK_ASC = 1:nrow(.)) %>% 
+  # get percentile
+  dplyr::mutate(PERCENTILE = RANK_ASC/nrow(.)*100) %>% 
+  # remove column `RANK_ASC` because it's printed in the datatable
+  dplyr::select(-RANK_ASC) %>% 
   DT::datatable(.)
+```
+
+## Show distribution of median and mean Fst
+```{r}
+# Median
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  ggplot() +
+    geom_histogram(aes(MEDIAN_FST), bins = 100) +
+    theme_bw() +
+    ggtitle("Distribution of median Fst")
+
+# Mean
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEAN_FST = mean(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  ggplot() +
+    geom_histogram(aes(MEAN_FST), bins = 100) +
+    theme_bw() +
+    ggtitle("Distribution of mean Fst")
 ```
 
 ## New palette for clumped traits
@@ -480,10 +509,11 @@ target_traits = c("total cholesterol measurement",
                   "BMI-adjusted hip circumference",
                   "alcohol dependence measurement",
                   "loneliness measurement",
-                  "COVID-19"
+                  "COVID-19",
+                  "bone density",
+                  "Myopia",
+                  "hypertension"
                   )
-
-
 
 plotly_ecdf_select = hits_filt %>%
   # filter for `target_traits`
@@ -507,6 +537,24 @@ plotly::ggplotly(plotly_ecdf_select,
                  tooltip = c("TRAIT"))
 ```
 
+## Get their ranks and percentiles
+
+```{r}
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  # get rank
+  dplyr::mutate(RANK_ASC = 1:nrow(.)) %>% 
+  # get percentile
+  dplyr::mutate(PERCENTILE = RANK_ASC/nrow(.)*100) %>% 
+  # filter for target
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  DT::datatable(.)
+```
+
+
 ```{r, out.width='150%'}
 target_traits_sml = c("lipoprotein A measurement",
                       "Alzheimer's disease",
@@ -515,13 +563,17 @@ target_traits_sml = c("lipoprotein A measurement",
                       "alcohol drinking",
                       "body height",
                       "type ii diabetes mellitus",
-                      "balding measurement",
                       "self reported educational attainment",
                       "mathematical ability",
+                      "hypertension",
                       "intelligence",
+                      "bone density",
                       "schizophrenia",
                       "cognitive function measurement", 
                       "skin pigmentation",
+                      "handedness",
+                      "hemorrhoid",
+                      "Myopia",
                       "BMI-adjusted hip circumference",
                       "hair shape measurement",
                       "HIV-1 infection",
@@ -552,6 +604,22 @@ plotly::ggplotly(plotly_ecdf_sml,
                  tooltip = c("TRAIT"))
 ```
 
+## Ranks and percentiles
+
+```{r}
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  # get rank
+  dplyr::mutate(RANK_ASC = 1:nrow(.)) %>% 
+  # get percentile
+  dplyr::mutate(PERCENTILE = RANK_ASC/nrow(.)*100) %>% 
+  # filter for target
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  DT::datatable(.)
+```
 
 # Extract same number of top SNPs for selected traits as `skin pigmentation`
 
@@ -702,14 +770,14 @@ ridges_plot
 width = 8
 height = 20
 
-ggsave(here::here("docs/plots/20210901_ridges.png"),
+ggsave(here::here("docs/plots/20211007_ridges.png"),
        device = "png",
        width = width,
        height = height,
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20210901_ridges.svg"),
+ggsave(here::here("docs/plots/20211007_ridges.svg"),
        device = "svg",
        width = width,
        height = height,
@@ -758,7 +826,7 @@ ecdf_plot_face = hits_v_controls %>%
     theme(strip.text.x = element_text(size = 5)) +
     xlab(expression(italic(F[ST]))) +
     ylab("Cumulative Probability") +
-    facet_wrap(~TRAIT, nrow = 5, ncol = 4) 
+    facet_wrap(~TRAIT, nrow = 6, ncol = 4) 
 
 ecdf_plot_face
 ```
@@ -844,6 +912,18 @@ ks_plot = ks_stats %>%
 ggplotly(ks_plot, tooltip = c("x", "y"))
 ```
 
+#### Bonferroni correction and add stars
+
+```{r}
+ks_stats = purrr::map_dfr(ks_out, function(TRAIT){
+  tibble::tibble(D = TRAIT$statistic,
+                 p_value = TRAIT$p.value)
+}, .id = "TRAIT") %>% 
+  # Adjust p-value
+  dplyr::mutate(P_ADJ = p.adjust(p_value, method = "bonferroni")) %>% 
+  # Add stars
+  dplyr::mutate(SIG_STARS = gtools::stars.pval(P_ADJ))
+```
 
 
 ```{r}
@@ -890,7 +970,7 @@ final_figure = cowplot::ggdraw() +
 width = 12
 height = 12
 
-ggsave(here::here("docs/plots/20210904_final.png"),
+ggsave(here::here("docs/plots/20211007_final.png"),
        final_figure,
        device = "png",
        width = width,
@@ -898,7 +978,7 @@ ggsave(here::here("docs/plots/20210904_final.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20210904_final.svg"),
+ggsave(here::here("docs/plots/20211007_final.svg"),
        final_figure,
        device = "svg",
        width = width,
@@ -907,6 +987,6 @@ ggsave(here::here("docs/plots/20210904_final.svg"),
 ```
 
 ```{r}
-knitr::include_graphics(here::here("docs/plots/20210904_final.png"))
+knitr::include_graphics(here::here("docs/plots/20211007_final.png"))
 ```
 
