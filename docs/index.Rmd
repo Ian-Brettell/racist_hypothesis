@@ -990,3 +990,368 @@ ggsave(here::here("docs/plots/20211007_final.svg"),
 knitr::include_graphics(here::here("docs/plots/20211007_final.png"))
 ```
 
+# Rank by KS divergence
+
+Ranking by median Fst doesn't capture the difference between pigmentation/HIV traits, and all others. 
+
+This difference is captured by the D statistic, but we would want a direction -- i.e. are the hits higher or lower than the controls?
+
+And then try to rank by that difference 
+
+## Create DF
+
+```{r, warning = F}
+# Create full data frame of hits and controls
+hits_v_controls_full = list("HIT" = hits_filt,
+                            "CONTROL" = controls_filt) %>% 
+  dplyr::bind_rows(.id = "TYPE") %>% 
+  # create column for palette
+  dplyr::mutate(PAL_TRAIT = dplyr::if_else(TYPE == "HIT",
+                                           TRAIT,
+                                           "control"))
+
+# Add colour to palette
+rank_pal_50_new = c("control" = "#2E3138", rank_pal_50)
+
+
+
+```
+
+## Plot based on median Fst rank
+
+```{r}
+ecdf_plot_face_w_controls = hits_v_controls_full %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(rank_pal_50_new))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = rank_pal_50_new) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT) 
+
+ggsave(here::here("docs/plots/20211007_ecdf_all_faceted_with_controls.png"),
+       plot = ecdf_plot_face_w_controls, 
+       device = "png",
+       width = 30,
+       height = 22,
+       units = "in",
+       dpi = 400)
+```
+```{r}
+knitr::include_graphics(here::here("docs/plots/20211007_ecdf_all_faceted_with_controls.png"))
+```
+
+# Rank by difference from controls
+
+```{r, warning = F}
+
+# Run KS.test
+# Split into list by trait
+ks_list_full = hits_v_controls_full %>% 
+  split(., f = .$TRAIT) %>% 
+  purrr::map(., function(TRAIT){
+    split(TRAIT, f = TRAIT$TYPE)
+  })
+
+# `Run ks.test`
+ks_out_full = purrr::map(ks_list_full, function(TRAIT){
+  # Create output list
+  out = list()
+  
+  # Run KS tests
+  out[["two.sided"]] = ks.test(TRAIT$HIT$FST_PEGAS,
+                               TRAIT$CONTROL$FST_PEGAS,
+                               alternative = "two.sided")
+  out[["less"]] = ks.test(TRAIT$HIT$FST_PEGAS,
+                        TRAIT$CONTROL$FST_PEGAS,
+                        alternative = "less")
+  out[["greater"]] = ks.test(TRAIT$HIT$FST_PEGAS,
+                             TRAIT$CONTROL$FST_PEGAS,
+                             alternative = "greater")
+
+  return(out)
+})
+
+# Pull out stats
+ks_stats_full = purrr::map_dfr(ks_out_full, function(TRAIT){
+  tibble::tibble(D_TWO = TRAIT$two.sided$statistic,
+                 D_LESS = TRAIT$less$statistic,
+                 D_GREATER = TRAIT$greater$statistic)
+}, .id = "TRAIT")
+
+```
+
+The `alternative = "two.sided"` result is just the highest D of either "less" or "greater".
+
+```{r}
+ks_stats_full %>%
+  dplyr::arrange(desc(D_TWO)) %>% 
+  DT::datatable(.)
+```
+
+The documentation for `ks.test` says: 
+>... in the two-sample case alternative = "greater" includes distributions for which x is stochastically smaller than y (the CDF of x lies above and hence to the left of that for y)...
+
+So for traits with hits that have a _lower_ $F_{ST}$ than their controls will have a higher `D` under the `"greater"` test than the `"less"` test, e.g. `body mass index`. 
+
+Give those a negative sign:
+
+```{r}
+ks_stats_full = ks_stats_full %>% 
+  dplyr::mutate(D_SIGNED = dplyr::case_when(D_GREATER > D_LESS ~ -D_TWO,
+                                            D_GREATER < D_LESS ~ D_TWO,
+                                            D_GREATER == D_LESS ~ 0)) %>% 
+  dplyr::arrange(D_SIGNED)
+
+ks_stats_full %>% 
+  DT::datatable(.)
+```
+
+## Create ranking
+
+```{r}
+traits_d_ranked = ks_stats_full$TRAIT
+
+d_rank_pal = turbo(n = length(traits_d_ranked))
+names(d_rank_pal) = traits_d_ranked
+```
+
+## Plot faceted eCDFs of all traits ranked by difference from controls
+
+```{r}
+ecdf_plot_face_w_controls_d_rank = hits_v_controls_full %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT) 
+
+ggsave(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png"),
+       plot = ecdf_plot_face_w_controls_d_rank, 
+       device = "png",
+       width = 30,
+       height = 22,
+       units = "in",
+       dpi = 400)
+```
+
+## Plot eCDFs of all traits ranked by difference from controls
+
+```{r, out.width = '175%'}
+plotly_ecdf_all_d_ranked = hits_filt %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5))
+
+plotly::ggplotly(plotly_ecdf_all_d_ranked,
+                 tooltip = c("TRAIT"))
+```
+
+## Plot eCDFs of selected traits 
+
+```{r}
+new_traits = c(
+  "heart rate variability measurement",
+  "alcohol abuse",
+  "aging",
+  "blood pressure",
+  "BMI-adjusted waist circumference",
+  "body mass index",
+  "intelligence",
+  "self reported educational attainment",
+  "asthma",
+  "body height",
+  "mathematical ability",
+  "type ii diabetes mellitus",
+  "hair colour measurement",
+  "cognitive function measurement",
+  "schizophrenia",
+  "brain measurement",
+  "Alzheimer's disease",
+  "stroke",
+  "hair color",
+  "hypertension",
+  "Myopia",
+  "BMI-adjusted hip circumference",
+  "hair shape measurement",
+  "eye colour measurement",
+  "skin pigmentation",
+  "skin pigmentation measurement",
+  "HIV-1 infection",
+  "viral load"
+)
+```
+
+## Final plots
+
+### Ridges
+
+```{r, fig.dim=c(8,20)}
+ridges_plot_d_rank = hits_filt %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% new_traits) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(names(d_rank_pal)))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+    geom_density_ridges(scale = 2,
+                        bandwidth = 0.003,
+                        calc_ecdf = TRUE,
+                        quantiles = 0.5,
+                        quantile_lines = T,
+                        jittered_points = T,
+                        point_shape = '|', alpha = 0.85, point_size = 2,
+                        position = position_points_jitter(height = 0),
+                        ) +
+    scale_fill_manual(values = d_rank_pal) +
+    scale_colour_manual(values = darker(d_rank_pal)) +
+    guides(fill = "none", colour = "none") +
+    theme_cowplot() +
+    scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+    xlab(expression(italic(F[ST]))) +
+    ylab(NULL)
+
+ridges_plot_d_rank
+```
+
+### Faceted
+
+```{r, out.width='150%'}
+ecdf_plot_face_d_rank = hits_v_controls_full %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% new_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT, nrow = 7, ncol = 4) 
+
+ecdf_plot_face_d_rank
+```
+
+```{r}
+ggsave(here::here("docs/plots/20211013_ecdf_select_faceted_with_controls_d_rank.png"),
+       plot = ecdf_plot_face_d_rank, 
+       device = "png",
+       width = 8,
+       height = 10,
+       units = "in",
+       dpi = 400)
+```
+
+
+### Together
+
+```{r}
+ecdf_plot_all_d_rank = hits_filt %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% new_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_cowplot() +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability")
+
+ecdf_plot_all_d_rank
+```
+
+### Final arranged
+
+```{r}
+final_figure = cowplot::ggdraw() +
+  draw_plot(ridges_plot_d_rank,
+            x = 0, y = 0, width = .5, height = 1) +
+  draw_plot(ecdf_plot_face_d_rank,
+            x = .5, y = 0.35, width = .5, height = .65) +
+  draw_plot(ecdf_plot_all_d_rank,
+            x = .5, y = 0, width = .5, height = .35) +
+  draw_plot_label(label = c("A", "B", "C"), size = 25,
+                  x = c(0, .5, .5), y = c(1, 1, .35),
+                  hjust = c(-.15, .15, .15),
+                  color = "#37323E")
+```
+
+```{r, eval = F}
+width = 12
+height = 12
+
+ggsave(here::here("docs/plots/20211013_final.png"),
+       final_figure,
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20211013_final.svg"),
+       final_figure,
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20211013_final.png"))
+```
+

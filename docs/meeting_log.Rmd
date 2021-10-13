@@ -18,6 +18,10 @@ library(here)
 source(here::here("code/scripts/20210628_source.R"))
 ```
 
+# 7 October 2021
+
+Rank by D-statistic.
+
 # 30 September 2021
 
 * How to add stars: <https://rpkgs.datanovia.com/ggpubr/reference/stat_pvalue_manual.html>
