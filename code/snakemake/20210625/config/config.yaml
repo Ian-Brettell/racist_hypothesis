@@ -62,7 +62,7 @@ picard:
 bash:
     docker://bash:5.1.8
 R:
-    docker://brettellebi/human_traits_fst:R_4.1.0
+    /hps/nobackup/birney/users/ian/containers/human_traits_fst/R_4.1.0.sif
 bcftools:
     docker://quay.io/biocontainers/bcftools:1.10--h5d15f04_0
 plink1.9:

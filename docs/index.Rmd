@@ -228,11 +228,14 @@ controls_filt = controls %>%
 
 ```{r}
 clumped_files = list.files(file.path(target_dir, "high_cov/plink/clumped"), pattern = "*.clumped", full.names = T)
+
 clumped = lapply(clumped_files, function(FILE){
-  readr::read_delim(FILE,
-                    delim = " ",
-                    col_types = "i-c-d-------",
-                    trim_ws = T)
+  # note: version 2 doesn't parse properly, so we need to use version 1
+  readr::with_edition(1, readr::read_delim(FILE,
+                                           delim = " ",
+                                           col_types = "i-c-d-------",
+                                           trim_ws = T)
+  )
 })
 names(clumped) = stringr::str_remove(basename(clumped_files), ".clumped")
 ```
@@ -1052,7 +1055,7 @@ ggsave(here::here("docs/plots/20211007_ecdf_all_faceted_with_controls.png"),
 knitr::include_graphics(here::here("docs/plots/20211007_ecdf_all_faceted_with_controls.png"))
 ```
 
-# Rank by difference from controls
+## Rank by divergence from controls
 
 ```{r, warning = F}
 
@@ -1158,6 +1161,11 @@ ggsave(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png
        units = "in",
        dpi = 400)
 ```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png"))
+```
+
 
 ## Plot eCDFs of all traits ranked by difference from controls
 

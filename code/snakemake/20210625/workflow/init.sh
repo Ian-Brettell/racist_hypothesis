@@ -22,7 +22,7 @@ snakemake \
 
 ## Create singularity container on Codon (from `human_traits_fst` repo)
 singularity build --remote \
-      /hps/software/users/birney/ian/containers/R_4.1.0.sif \
+      /hps/nobackup/birney/users/ian/containers/human_traits_fst/R_4.1.0.sif \
       /hps/software/users/birney/ian/repos/human_traits_fst/code/snakemake/20210625/workflow/envs/r_4.1.0/r_4.1.0.def
 
 ssh proxy-codon
@@ -32,7 +32,7 @@ bsub -M 20000 -Is bash
 singularity shell --bind /hps/software/users/birney/ian/rstudio_db:/var/lib/rstudio-server \
                   --bind /hps/software/users/birney/ian/tmp:/tmp \
                   --bind /hps/software/users/birney/ian/run:/run \
-                  /hps/software/users/birney/ian/containers/R_4.1.0.sif
+                  /hps/nobackup/birney/users/ian/containers/human_traits_fst/R_4.1.0.sif
 
 # Old code: was made obsolate when Docker changed its automated build rules
 #singularity shell --bind /hps/software/users/birney/ian/rstudio_db:/var/lib/rstudio-server \
