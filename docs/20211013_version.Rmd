@@ -1,0 +1,1365 @@
+---
+title: "$F_{ST}$ variation across human traits"
+author: "Ian Brettell"
+date: '`r format(Sys.Date())`'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    dev: 'svg'
+    number_sections: true
+    keep_md: false
+    pandoc_args: --lua-filter=color-text.lua
+    highlight: pygments
+#output: html_notebook
+#editor_options: 
+#  chunk_output_type: inline
+---
+
+* [Working directory]{color="#4f0943"} on EBI Codon HPC: `/hps/nobackup/birney/users/ian/hmn_fst`
+* [GitHub repository]{color="#4f0943"}: <https://github.com/brettellebi/human_traits_fst>
+
+# Source libraries, functions and plotting parameters
+
+```{r, warning = F, message = F}
+library(here)
+
+source(here::here("code/scripts/20210628_source.R"))
+```
+
+# Get full list of traits, associations and studies from the GWAS Catalog
+
+## Traits
+
+**NOTE**: only run once.
+```{r, eval = F}
+date_of_collection = "20210809"
+long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
+out_file = here::here("code/snakemake/20210625/config",
+                      paste(date_of_collection, "_all_traits.tsv", sep = ""))
+
+# Get list of all traits in database
+all_traits = gwasrapidd::get_traits()
+
+# Filter out IDs that cause an error
+all_traits_tbl = all_traits@traits %>% 
+  dplyr::filter(efo_id != "CHEBI:7916") %>%
+  # Save to file
+  readr::write_tsv(out_file)
+```
+
+```{r, include = F}
+date_of_collection = "20210809"
+out_file = here::here("code/snakemake/20210625/config",
+                      paste(date_of_collection, "_all_traits.tsv", sep = ""))
+
+all_traits_tbl = readr::read_tsv(out_file)
+```
+
+```{r}
+all_traits_tbl %>% 
+  DT::datatable(.)
+```
+
+
+## Associations
+
+**NOTE**: only run once.
+```{r, eval = F}
+#Need to do them sequentially because the GWAS Catalog can't handle dozens (let alone thousands) of simultaneous queries.
+date_of_collection = "20210809"
+long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
+
+# create output dir
+out_dir = file.path(long_term_dir,
+                    date_of_collection,
+                    "associations_raw")
+dir.create(out_dir, recursive = T)
+
+# Get associations
+counter = 0
+lapply(all_traits_tbl$efo_id, function(EFO_ID) {
+  counter <<- counter + 1
+  # set output file name
+  out_path = file.path(out_dir,
+                       paste(EFO_ID, ".rds", sep = ""))
+  # if output file doesn't already exist, get associations and save
+  if (!file.exists(out_path)){
+    out = gwasrapidd::get_associations(efo_id = EFO_ID)
+    saveRDS(out, out_path)
+  } else {
+    print(paste(counter, ". ", EFO_ID, ": File already exists.", sep = ""))
+  }
+})
+```
+
+
+# Run Snakemake pipeline to extract data
+
+Full Snakemake pipeline here: <https://github.com/brettellebi/human_traits_fst/tree/master/code/snakemake/20210625>
+
+# Read in processed data
+
+## Specify target directory
+
+```{r}
+target_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd/20210809"
+```
+
+## Total initial counts
+
+```{r}
+assocs_path = file.path(target_dir, "associations_raw")
+
+assocs_files = list.files(assocs_path, full.names = T)
+
+# Read in associations
+assocs_raw = lapply(assocs_files, function(EFO_ID){
+  readRDS(EFO_ID)
+})
+
+names(assocs_raw) = basename(assocs_files) %>% 
+  stringr::str_remove(".rds")
+
+# Get counts
+raw_counts = purrr::map(assocs_raw, function(EFO_ID){
+  EFO_ID@risk_alleles %>%
+    dplyr::pull(variant_id) %>% 
+    unique(.) %>% 
+    length(.) %>% 
+    data.frame("N" = .)
+}) %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  # Add `trait`
+  dplyr::left_join(all_traits_tbl %>% 
+                     dplyr::select(efo_id, trait),
+                   by = c("EFO_ID" = "efo_id")) %>% 
+  # Rename to `TRAIT`
+  dplyr::rename(TRAIT = trait) %>% 
+  # Remove all traits with N < 1
+  dplyr::filter(N >= 1)
+
+raw_counts %>% 
+  dplyr::arrange(dplyr::desc(N)) %>% 
+  DT::datatable(.)
+```
+
+## Hits
+
+Set minimum number of "independent" (i.e. post-clumped) SNPs per trait
+
+```{r}
+min_snps = 10
+```
+
+```{r}
+hits_path = file.path(target_dir, "pegas/fst/consol/hits.rds")
+hits = readRDS(hits_path) %>%
+  lapply(., function(TRAIT_ID){
+    # convert to DF
+    TRAIT_ID %>%
+        data.frame(.) %>% 
+        tibble::rownames_to_column(var = "SNP") %>% 
+        dplyr::select(SNP, FST_PEGAS = Fst)
+  }) %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  dplyr::left_join(all_traits_tbl %>% 
+                     dplyr::select(EFO_ID = efo_id,
+                                   TRAIT = trait),
+                   by = "EFO_ID")
+
+# Get counts
+hits_counts = hits %>% 
+  dplyr::count(EFO_ID, TRAIT) %>% 
+  dplyr::rename(N = n)
+
+hits_counts %>% 
+  dplyr::arrange(dplyr::desc(N)) %>% 
+  DT::datatable(.)
+
+# Get vector of EFO_IDs with more than `min_snps`
+keep_snps = hits %>%
+  dplyr::count(EFO_ID) %>%
+  dplyr::filter(n >= min_snps) %>% 
+  dplyr::pull(EFO_ID)
+
+# How many traits pass threshold
+length(keep_snps)
+
+# Filter hits for those traits
+hits_filt = hits %>% 
+  dplyr::filter(EFO_ID %in% keep_snps)
+
+```
+
+## Controls
+
+**NOTE** one SNP ID can map to multiple loci, so there are duplicate SNP IDs with *different Fst measures*.
+
+In the code below we remove all the duplicated SNPs which have periods in their names, e.g. {SNP_ID}.1 or {SNP_ID}.2. 
+
+That is, we keep the first SNP in the genome with the ID. This would bias toward SNPs "earlier" in the genome. Probably not consequential? 
+```{r}
+# Fst controls
+controls_path = file.path(target_dir, "pegas/fst/consol/controls.rds")
+controls = readRDS(controls_path) %>%
+  lapply(., function(TRAIT_ID){
+    # convert to DF
+    TRAIT_ID %>%
+        data.frame(.) %>% 
+        tibble::rownames_to_column(var = "SNP") %>% 
+        dplyr::select(SNP, FST_PEGAS = Fst)
+  }) %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  dplyr::left_join(all_traits_tbl %>% 
+                     dplyr::select(EFO_ID = efo_id,
+                                   TRAIT = trait),
+                   by = "EFO_ID") %>% 
+  # NOTE: remove duplicated IDs
+  dplyr::filter(!grepl("\\.", SNP))
+
+# Filter controls for traits with more than `min_snps` post-clumping
+controls_filt = controls %>% 
+  dplyr::filter(EFO_ID %in% keep_snps)
+
+```
+
+## Plink's `.clumped` files
+
+```{r}
+clumped_files = list.files(file.path(target_dir, "high_cov/plink/clumped"), pattern = "*.clumped", full.names = T)
+
+clumped = lapply(clumped_files, function(FILE){
+  # note: version 2 doesn't parse properly, so we need to use version 1
+  readr::with_edition(1, readr::read_delim(FILE,
+                                           delim = " ",
+                                           col_types = "i-c-d-------",
+                                           trim_ws = T)
+  )
+})
+names(clumped) = stringr::str_remove(basename(clumped_files), ".clumped")
+```
+
+## Add palette based on pre-clump SNP count
+
+```{r}
+pal_all = turbo(n = nrow(raw_counts))
+names(pal_all) = raw_counts %>% 
+  dplyr::arrange(desc(N)) %>% 
+  dplyr::pull(TRAIT)
+```
+
+# SNP counts pre- and post-clumping
+
+```{r, out.width = '150%'}
+snp_count_plot = list("PRE-CLUMP" = raw_counts,
+                      "POST-CLUMP" = hits_counts) %>% 
+  dplyr::bind_rows(.id = "FILTER") %>% 
+  # order variables
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_all)),
+                FILTER = factor(FILTER, levels = c("PRE-CLUMP", "POST-CLUMP"))) %>% 
+  ggplot() +
+    geom_col(aes(TRAIT, N, fill = TRAIT)) +
+    scale_fill_manual(values = pal_all) +
+    theme_bw() +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank()) +
+    ylab("N LOCI") +
+    facet_wrap(~FILTER, nrow = 2) +
+    guides(fill = "none")
+
+plotly::ggplotly(snp_count_plot,
+                 tooltip = c("TRAIT"))
+```
+
+```{r, eval = F}
+width = 20
+height = 10
+
+ggsave(here::here("docs/plots/20210901_snp_counts.png"),
+       plot = snp_count_plot,
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20210901_snp_counts.svg"),
+       plot = snp_count_plot,
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
+
+
+# eCDF for $F_{ST}$
+
+## Traits ordered by median Fst, with number of loci
+
+```{r}
+# Using `hits_filt` -- the traits with >= 5 SNPs
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  # get rank
+  dplyr::mutate(RANK_ASC = 1:nrow(.)) %>% 
+  # get percentile
+  dplyr::mutate(PERCENTILE = RANK_ASC/nrow(.)*100) %>% 
+  # remove column `RANK_ASC` because it's printed in the datatable
+  dplyr::select(-RANK_ASC) %>% 
+  DT::datatable(.)
+```
+
+## Show distribution of median and mean Fst
+```{r}
+# Median
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  ggplot() +
+    geom_histogram(aes(MEDIAN_FST), bins = 100) +
+    theme_bw() +
+    ggtitle("Distribution of median Fst")
+
+# Mean
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEAN_FST = mean(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  ggplot() +
+    geom_histogram(aes(MEAN_FST), bins = 100) +
+    theme_bw() +
+    ggtitle("Distribution of mean Fst")
+```
+
+## New palette for clumped traits
+
+```{r}
+# set number of colours in gradient
+n_cols = 100
+```
+
+
+### Based on **rank**
+
+```{r}
+# by median
+rank_fst_50 = hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  dplyr::pull(TRAIT)
+
+rank_pal_50 = turbo(n = length(rank_fst_50))
+names(rank_pal_50) = rank_fst_50
+
+
+# By 90 percentile
+rank_fst_90 = hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = quantile(FST_PEGAS, probs = 0.9, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  dplyr::pull(TRAIT)
+
+rank_pal_90 = turbo(n = length(rank_fst_90))
+names(rank_pal_90) = rank_fst_90
+
+# Look at scale by rank
+scales::show_col(rank_pal_50, labels = F)
+```
+
+### Based on Median Fst on continous scale
+
+```{r}
+# create new palette based on median Fst
+median_fst = hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T)) %>% 
+  dplyr::arrange(MEDIAN_FST) %>%
+  # add negative log
+  dplyr::mutate(MEDIAN_FST_ADJ = ifelse(MEDIAN_FST <= 0, NA, MEDIAN_FST),
+                MEDIAN_FST_NL = -log(MEDIAN_FST_ADJ))
+
+# Get min and max to build palette
+bins = seq(min(median_fst$MEDIAN_FST),
+           max(median_fst$MEDIAN_FST),
+           length.out = n_cols + 1)
+
+log_bins = seq(min(median_fst$MEDIAN_FST_NL, na.rm = T),
+               max(median_fst$MEDIAN_FST_NL, na.rm = T),
+               length.out = n_cols + 1)
+
+# Create tibble of palette
+ord_pal_df = tibble::tibble(COLOUR = turbo(n = n_cols),
+                            COLOUR_LOG = turbo(n = n_cols),
+                            COLOUR_BIN = seq(1, n_cols),
+                            COLOUR_BIN_LOG = rev(seq(1, n_cols)))
+
+
+# Add `COLOUR_BIN` and `COLOUR`
+median_fst = median_fst %>% 
+  dplyr::mutate(COLOUR_BIN = cut(MEDIAN_FST, breaks = bins, labels = F, include.lowest = T),
+                COLOUR_BIN_LOG = cut(MEDIAN_FST_NL, breaks = log_bins, labels = F, include.lowest = T)) %>% 
+  dplyr::left_join(ord_pal_df %>% 
+                     dplyr::select(COLOUR, COLOUR_BIN),
+                   by = "COLOUR_BIN") %>% 
+  dplyr::left_join(ord_pal_df %>% 
+                     dplyr::select(COLOUR_LOG, COLOUR_BIN_LOG),
+                   by = "COLOUR_BIN_LOG")
+
+ord_pal = median_fst$COLOUR
+names(ord_pal) = median_fst$TRAIT
+
+scales::show_col(ord_pal, labels = F)
+
+ord_pal_log = median_fst$COLOUR_LOG
+names(ord_pal_log) = median_fst$TRAIT
+
+scales::show_col(ord_pal_log, labels = F)
+```
+
+Just use rank? 
+
+## Plot all
+
+```{r, eval = F}
+ecdf_all_faceted = hits_filt %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = rank_pal_50) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    xlab(expression(italic(F[ST]))) +
+    facet_wrap(~TRAIT) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 4.5))
+
+ggsave(here::here("docs/plots/20210901_ecdf_all_faceted.png"),
+       plot = ecdf_all_faceted, 
+       device = "png",
+       width = 30,
+       height = 22,
+       units = "in",
+       dpi = 400)
+```
+
+```{r, out.width='150%'}
+knitr::include_graphics(here::here("docs/plots/20210901_ecdf_all_faceted.png"))
+```
+
+## Plotly
+
+### All
+
+```{r, out.width = '175%'}
+plotly_ecdf_all = hits_filt %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = rank_pal_50) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5))
+
+plotly::ggplotly(plotly_ecdf_all,
+                 tooltip = c("TRAIT"))
+```
+
+### Select
+
+Select interesting traits
+
+```{r, out.width='150%'}
+# get traits to look closer at
+target_traits = c("total cholesterol measurement",
+                  "late-onset Alzheimers disease",
+                  "body height",
+                  "body mass index",
+                  "mathematical ability",
+                  "intelligence",
+                  "self reported educational attainment",
+                  "type ii diabetes mellitus",
+                  "asthma",
+                  "HIV-1 infection",
+                  "cognitive function measurement", 
+                  "heart failure",
+                  "diabetes mellitus",
+                  "coronary artery disease",
+                  "mortality",
+                  "longevity",
+                  "schizophrenia",
+                  "skin pigmentation",
+                  "skin pigmentation measurement",
+                  "eye colour measurement",
+                  "facial morphology measurement",
+                  "squamous cell carcinoma",
+                  "tuberculosis",
+                  "cleft palate",
+                  "neurotic disorder",
+                  "reaction time measurement",
+                  "endometrial carcinoma",
+                  "BMI-adjusted hip circumference",
+                  "alcohol dependence measurement",
+                  "loneliness measurement",
+                  "COVID-19",
+                  "bone density",
+                  "Myopia",
+                  "hypertension"
+                  )
+
+plotly_ecdf_select = hits_filt %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits) %>%
+  # add `MEDIAN_FST` %>% 
+  dplyr::left_join(median_fst,
+                   by = "TRAIT") %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50))) %>% 
+  ggplot(aes(FST_PEGAS, colour = TRAIT)) +
+    stat_ecdf() +
+    #scale_colour_gradientn(colours = turbo(100)) +
+    scale_colour_manual(values = rank_pal_50) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none")
+
+plotly::ggplotly(plotly_ecdf_select,
+                 tooltip = c("TRAIT"))
+```
+
+## Get their ranks and percentiles
+
+```{r}
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  # get rank
+  dplyr::mutate(RANK_ASC = 1:nrow(.)) %>% 
+  # get percentile
+  dplyr::mutate(PERCENTILE = RANK_ASC/nrow(.)*100) %>% 
+  # filter for target
+  dplyr::filter(TRAIT %in% target_traits) %>% 
+  DT::datatable(.)
+```
+
+
+```{r, out.width='150%'}
+target_traits_sml = c("lipoprotein A measurement",
+                      "Alzheimer's disease",
+                      "total cholesterol measurement",
+                      "body mass index",
+                      "alcohol drinking",
+                      "body height",
+                      "type ii diabetes mellitus",
+                      "self reported educational attainment",
+                      "mathematical ability",
+                      "hypertension",
+                      "intelligence",
+                      "bone density",
+                      "schizophrenia",
+                      "cognitive function measurement", 
+                      "skin pigmentation",
+                      "handedness",
+                      "hemorrhoid",
+                      "Myopia",
+                      "BMI-adjusted hip circumference",
+                      "hair shape measurement",
+                      "HIV-1 infection",
+                      "viral load",
+                      "skin pigmentation measurement",
+                      "eye colour measurement")
+
+plotly_ecdf_sml = hits_filt %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits_sml) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = rank_pal_50) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5))
+
+plotly::ggplotly(plotly_ecdf_sml,
+                 tooltip = c("TRAIT"))
+```
+
+## Ranks and percentiles
+
+```{r}
+hits_filt %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(MEDIAN_FST = median(FST_PEGAS, na.rm = T),
+                   N_LOCI = dplyr::n()) %>% 
+  dplyr::arrange(MEDIAN_FST) %>% 
+  # get rank
+  dplyr::mutate(RANK_ASC = 1:nrow(.)) %>% 
+  # get percentile
+  dplyr::mutate(PERCENTILE = RANK_ASC/nrow(.)*100) %>% 
+  # filter for target
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  DT::datatable(.)
+```
+
+# Extract same number of top SNPs for selected traits as `skin pigmentation`
+
+To check whether the distribution changes if you only have a few SNPs with presumably the highest effect sizes.
+
+```{r, out.width='150%'}
+# How many unique SNPs for each trait
+hits_filt %>% 
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(SNP_COUNT = n_distinct(SNP)) %>% 
+  DT::datatable(.)
+
+# Get highest number of SNPs of the pigmentation traits
+max_n_snps = hits_filt %>% 
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::summarise(SNP_COUNT = n_distinct(SNP)) %>% 
+  dplyr::filter(TRAIT %in% c("skin pigmentation measurement", "skin pigmentation", "eye colour measurement")) %>% 
+  dplyr::pull(SNP_COUNT) %>% 
+  max(.)
+
+# Get EFO IDs for target traits
+target_efo_ids = hits_filt %>% 
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  dplyr::distinct(EFO_ID) %>% 
+  dplyr::pull(EFO_ID)
+
+# Filter `clumped` for `target_traits_sml` and then pull out the top `max_n_snps` for each trait
+clumped_red = clumped[names(clumped) %in% target_efo_ids] %>% 
+  dplyr::bind_rows(.id = "EFO_ID") %>% 
+  dplyr::arrange(EFO_ID, P) %>% 
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::slice_head(n = max_n_snps) %>% 
+  split(., f = .$EFO_ID)
+
+# Filter `fst_all` for clumped SNPs
+## Split by `EFO_ID`
+fst_all = hits_filt %>% 
+  split(., f = .$EFO_ID)
+## Filter for `target_efo_ids`
+fst_clumped_red = fst_all[names(fst_all) %in% target_efo_ids]
+## Get vector of efo_ids
+clumped_red_names = names(fst_clumped_red)
+## For each efo_id, take the top `max_n_snps`
+fst_clumped_red = lapply(names(fst_clumped_red), function(TRAIT_ID){
+    fst_all[[TRAIT_ID]] %>% 
+      dplyr::filter(SNP %in% clumped_red[[TRAIT_ID]]$SNP)
+})
+names(fst_clumped_red) = clumped_red_names
+# Bind into DF
+fst_clumped_df_red = fst_clumped_red %>% 
+  dplyr::bind_rows(.id = "EFO_ID") 
+
+# Plot
+plotly_ecdf_select_2 = fst_clumped_df_red %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = rank_pal_50) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5))
+
+plotly::ggplotly(plotly_ecdf_select_2,
+                 tooltip = c("TRAIT"))
+```
+
+# Were the HIV and viral load studies carried out in African populations?
+
+```{r}
+# Get studies
+hiv_traits = c("viral load", "HIV-1 infection")
+hiv_efo_ids = all_traits_tbl %>% 
+  dplyr::filter(trait %in% hiv_traits)
+assocs_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd/20210809/associations_raw"
+hiv_studies = lapply(hiv_efo_ids$efo_id, function(HIV_EFO){
+  out = list()
+  # read in associations
+  out[["ASSOCS"]] = readRDS(file.path(assocs_dir, paste(HIV_EFO, ".rds", sep = "")))
+  out[["KEY"]] = gwasrapidd::association_to_study(unique(out[["ASSOCS"]]@associations$association_id))
+  out[["STUDIES"]] = gwasrapidd::get_studies(study_id = unique(out[["KEY"]]$study_id))
+  return(out)
+})
+names(hiv_studies) = hiv_efo_ids$trait
+
+# Print studies
+hiv_out = purrr::map(hiv_studies, function(HIV_TRAIT){
+  HIV_TRAIT[["STUDIES"]]@studies %>% 
+    dplyr::distinct(study_id,
+                    initial_sample_size,
+                    replication_sample_size) %>% 
+    dplyr::left_join(HIV_TRAIT[["STUDIES"]]@publications %>% 
+                       dplyr::select(study_id, title),
+                     by = "study_id") %>% 
+    dplyr::select(study_id, title, initial_sample_size, replication_sample_size)
+})
+ 
+# HIV-1 infection
+DT::datatable(hiv_out$`HIV-1 infection`)
+
+# Viral load
+DT::datatable(hiv_out$`viral load`)
+```
+
+# Final figures
+
+## Ridges
+
+```{r, fig.dim=c(8,20)}
+ridges_plot = hits_filt %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits_sml) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(names(rank_pal_50)))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+    geom_density_ridges(scale = 2,
+                        bandwidth = 0.003,
+                        calc_ecdf = TRUE,
+                        quantiles = 0.5,
+                        quantile_lines = T,
+                        jittered_points = T,
+                        point_shape = '|', alpha = 0.85, point_size = 2,
+                        position = position_points_jitter(height = 0),
+                        ) +
+    scale_fill_manual(values = rank_pal_50) +
+    scale_colour_manual(values = darker(rank_pal_50)) +
+    guides(fill = "none", colour = "none") +
+    theme_cowplot() +
+    scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+    xlab(expression(italic(F[ST]))) +
+    ylab(NULL)
+
+ridges_plot
+```
+
+```{r, eval = F}
+width = 8
+height = 20
+
+ggsave(here::here("docs/plots/20211007_ridges.png"),
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20211007_ridges.svg"),
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
+
+## eCDF plot faceted
+
+### Get control data
+
+```{r}
+hits_v_controls = list("HIT" = hits_filt %>% 
+                         dplyr::filter(TRAIT %in% target_traits_sml),
+                       "CONTROL" = controls_filt %>% 
+                         dplyr::filter(TRAIT %in% target_traits_sml)) %>% 
+  dplyr::bind_rows(.id = "TYPE") %>% 
+  # create column for palette
+  dplyr::mutate(PAL_TRAIT = dplyr::if_else(TYPE == "HIT",
+                                           TRAIT,
+                                           "control"))
+
+# Add colour to palette
+rank_pal_50_new = c("control" = "#2E3138", rank_pal_50)
+```
+
+### Plot
+
+```{r, out.width='150%'}
+ecdf_plot_face = hits_v_controls %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits_sml) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(rank_pal_50_new))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = rank_pal_50_new) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT, nrow = 6, ncol = 4) 
+
+ecdf_plot_face
+```
+
+### Calculate KS test comparing between the distributions of hits and controls
+
+```{r}
+# Split into list by trait
+ks_list = hits_v_controls %>% 
+  split(., f = .$TRAIT) %>% 
+  purrr::map(., function(TRAIT){
+    split(TRAIT, f = TRAIT$TYPE)
+  })
+
+# `Run ks.test`
+ks_out = purrr::map(ks_list, function(TRAIT){
+  ks.test(TRAIT$HIT$FST_PEGAS,
+          TRAIT$CONTROL$FST_PEGAS,
+          alternative = "two.sided")
+})
+```
+
+#### With p-value
+
+```{r}
+# Pull out statistics
+ks_stats = purrr::map_dfr(ks_out, function(TRAIT){
+  tibble::tibble(D = TRAIT$statistic,
+                 p_value = TRAIT$p.value)
+}, .id = "TRAIT")
+
+# Wrangle
+ks_stats = ks_stats %>% 
+  # Add negative log column
+  dplyr::mutate("-log10(p-value)" = -log(p_value)) %>% 
+  # Remove p_value
+  dplyr::select(!p_value) %>% 
+  # Pivot statistics into single column
+  tidyr::pivot_longer(cols = c("D", "-log10(p-value)"),
+                      names_to = "STATISTIC",
+                      values_to = "VALUE")
+
+filt_traits_fac = names(rank_pal_50)[names(rank_pal_50) %in% ks_stats$TRAIT]
+# Plot
+ks_plot = ks_stats %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = filt_traits_fac),
+                STATISTIC = factor(STATISTIC, levels = c("D", "-log10(p-value)"))) %>% 
+  ggplot() +
+    geom_col(aes(TRAIT, VALUE, fill = TRAIT)) +
+    scale_fill_manual(values = rank_pal_50) +
+    theme_cowplot() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 5)) +
+    #theme(axis.title.x=element_blank(),
+    #      axis.text.x=element_blank(),
+    #      axis.ticks.x=element_blank()) +
+    guides(fill = "none") +
+    facet_grid(rows = vars(STATISTIC), scales = "free")
+
+#ggplotly(ks_plot, tooltip = c("x", "y"))
+ks_plot
+```
+
+#### Without p-value
+
+```{r, fig.cap = "D statistic from KS test comparing distributions of hits vs controls", out.width='150%'}
+# Pull out statistic
+ks_stats = purrr::map_dfr(ks_out, function(TRAIT){
+  TRAIT$statistic
+}, .id = "TRAIT")
+
+# Plot
+ks_plot = ks_stats %>% 
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50))) %>% 
+  ggplot() +
+    geom_col(aes(TRAIT, D, fill = TRAIT)) +
+    scale_fill_manual(values = rank_pal_50) +
+    theme_cowplot() +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank()) +
+    guides(fill = "none") 
+
+ggplotly(ks_plot, tooltip = c("x", "y"))
+```
+
+#### Bonferroni correction and add stars
+
+```{r}
+ks_stats = purrr::map_dfr(ks_out, function(TRAIT){
+  tibble::tibble(D = TRAIT$statistic,
+                 p_value = TRAIT$p.value)
+}, .id = "TRAIT") %>% 
+  # Adjust p-value
+  dplyr::mutate(P_ADJ = p.adjust(p_value, method = "bonferroni")) %>% 
+  # Add stars
+  dplyr::mutate(SIG_STARS = gtools::stars.pval(P_ADJ))
+```
+
+
+```{r}
+ecdf_plot_all = hits_filt %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% target_traits_sml) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = rank_pal_50) +
+    theme_cowplot() +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability")
+
+ecdf_plot_all
+```
+
+## Compile
+
+```{r}
+final_figure = cowplot::ggdraw() +
+  draw_plot(ridges_plot,
+            x = 0, y = 0, width = .5, height = 1) +
+  draw_plot(ecdf_plot_face,
+            x = .5, y = 0.35, width = .5, height = .65) +
+  draw_plot(ecdf_plot_all,
+            x = .5, y = 0, width = .5, height = .35) +
+  draw_plot_label(label = c("A", "B", "C"), size = 25,
+                  x = c(0, .5, .5), y = c(1, 1, .35),
+                  hjust = c(-.15, .15, .15),
+                  color = "#37323E")
+```
+
+```{r, eval = F}
+width = 12
+height = 12
+
+ggsave(here::here("docs/plots/20211007_final.png"),
+       final_figure,
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20211007_final.svg"),
+       final_figure,
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20211007_final.png"))
+```
+
+# Rank by KS divergence
+
+Ranking by median Fst doesn't capture the difference between pigmentation/HIV traits, and all others. 
+
+This difference is captured by the D statistic, but we would want a direction -- i.e. are the hits higher or lower than the controls?
+
+And then try to rank by that difference 
+
+## Create DF
+
+```{r, warning = F}
+# Create full data frame of hits and controls
+hits_v_controls_full = list("HIT" = hits_filt,
+                            "CONTROL" = controls_filt) %>% 
+  dplyr::bind_rows(.id = "TYPE") %>% 
+  # create column for palette
+  dplyr::mutate(PAL_TRAIT = dplyr::if_else(TYPE == "HIT",
+                                           TRAIT,
+                                           "control"))
+
+# Add colour to palette
+rank_pal_50_new = c("control" = "#2E3138", rank_pal_50)
+
+
+
+```
+
+## Plot based on median Fst rank
+
+```{r}
+ecdf_plot_face_w_controls = hits_v_controls_full %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(rank_pal_50)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(rank_pal_50_new))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = rank_pal_50_new) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT) 
+
+ggsave(here::here("docs/plots/20211007_ecdf_all_faceted_with_controls.png"),
+       plot = ecdf_plot_face_w_controls, 
+       device = "png",
+       width = 30,
+       height = 22,
+       units = "in",
+       dpi = 400)
+```
+```{r}
+knitr::include_graphics(here::here("docs/plots/20211007_ecdf_all_faceted_with_controls.png"))
+```
+
+## Rank by divergence from controls
+
+```{r, warning = F}
+
+# Run KS.test
+# Split into list by trait
+ks_list_full = hits_v_controls_full %>% 
+  split(., f = .$TRAIT) %>% 
+  purrr::map(., function(TRAIT){
+    split(TRAIT, f = TRAIT$TYPE)
+  })
+
+# `Run ks.test`
+ks_out_full = purrr::map(ks_list_full, function(TRAIT){
+  # Create output list
+  out = list()
+  
+  # Run KS tests
+  out[["two.sided"]] = ks.test(TRAIT$HIT$FST_PEGAS,
+                               TRAIT$CONTROL$FST_PEGAS,
+                               alternative = "two.sided")
+  out[["less"]] = ks.test(TRAIT$HIT$FST_PEGAS,
+                        TRAIT$CONTROL$FST_PEGAS,
+                        alternative = "less")
+  out[["greater"]] = ks.test(TRAIT$HIT$FST_PEGAS,
+                             TRAIT$CONTROL$FST_PEGAS,
+                             alternative = "greater")
+
+  return(out)
+})
+
+# Pull out stats
+ks_stats_full = purrr::map_dfr(ks_out_full, function(TRAIT){
+  tibble::tibble(D_TWO = TRAIT$two.sided$statistic,
+                 D_LESS = TRAIT$less$statistic,
+                 D_GREATER = TRAIT$greater$statistic)
+}, .id = "TRAIT")
+
+```
+
+The `alternative = "two.sided"` result is just the highest D of either "less" or "greater".
+
+```{r}
+ks_stats_full %>%
+  dplyr::arrange(desc(D_TWO)) %>% 
+  DT::datatable(.)
+```
+
+The documentation for `ks.test` says: 
+>... in the two-sample case alternative = "greater" includes distributions for which x is stochastically smaller than y (the CDF of x lies above and hence to the left of that for y)...
+
+So for traits with hits that have a _lower_ $F_{ST}$ than their controls will have a higher `D` under the `"greater"` test than the `"less"` test, e.g. `body mass index`. 
+
+Give those a negative sign:
+
+```{r}
+ks_stats_full = ks_stats_full %>% 
+  dplyr::mutate(D_SIGNED = dplyr::case_when(D_GREATER > D_LESS ~ -D_TWO,
+                                            D_GREATER < D_LESS ~ D_TWO,
+                                            D_GREATER == D_LESS ~ 0)) %>% 
+  dplyr::arrange(D_SIGNED)
+
+ks_stats_full %>% 
+  DT::datatable(.)
+```
+
+## Create ranking
+
+```{r}
+traits_d_ranked = ks_stats_full$TRAIT
+
+d_rank_pal = turbo(n = length(traits_d_ranked))
+names(d_rank_pal) = traits_d_ranked
+```
+
+## Plot faceted eCDFs of all traits ranked by difference from controls
+
+```{r}
+ecdf_plot_face_w_controls_d_rank = hits_v_controls_full %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT) 
+
+ggsave(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png"),
+       plot = ecdf_plot_face_w_controls_d_rank, 
+       device = "png",
+       width = 30,
+       height = 22,
+       units = "in",
+       dpi = 400)
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png"))
+```
+
+
+## Plot eCDFs of all traits ranked by difference from controls
+
+```{r, out.width = '175%'}
+plotly_ecdf_all_d_ranked = hits_filt %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_bw() +
+    ggtitle("eCDF") +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5))
+
+plotly::ggplotly(plotly_ecdf_all_d_ranked,
+                 tooltip = c("TRAIT"))
+```
+
+## Plot eCDFs of selected traits 
+
+```{r}
+new_traits = c(
+  "heart rate variability measurement",
+  "alcohol abuse",
+  "aging",
+  "blood pressure",
+  "BMI-adjusted waist circumference",
+  "body mass index",
+  "intelligence",
+  "self reported educational attainment",
+  "asthma",
+  "body height",
+  "mathematical ability",
+  "type ii diabetes mellitus",
+  "hair colour measurement",
+  "cognitive function measurement",
+  "schizophrenia",
+  "brain measurement",
+  "Alzheimer's disease",
+  "stroke",
+  "hair color",
+  "hypertension",
+  "Myopia",
+  "BMI-adjusted hip circumference",
+  "hair shape measurement",
+  "eye colour measurement",
+  "skin pigmentation",
+  "skin pigmentation measurement",
+  "HIV-1 infection",
+  "viral load"
+)
+```
+
+## Final plots
+
+### Ridges
+
+```{r, fig.dim=c(8,20)}
+ridges_plot_d_rank = hits_filt %>% 
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% new_traits) %>% 
+  # group by trait to take unique SNPs
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # reverse order of traits to put `body height` at the top
+  dplyr::mutate(TRAIT_REV = factor(TRAIT, levels = rev(names(d_rank_pal)))) %>% 
+  # plot
+  ggplot(aes(FST_PEGAS, TRAIT_REV, fill = TRAIT_REV, colour = TRAIT_REV)) +
+    geom_density_ridges(scale = 2,
+                        bandwidth = 0.003,
+                        calc_ecdf = TRUE,
+                        quantiles = 0.5,
+                        quantile_lines = T,
+                        jittered_points = T,
+                        point_shape = '|', alpha = 0.85, point_size = 2,
+                        position = position_points_jitter(height = 0),
+                        ) +
+    scale_fill_manual(values = d_rank_pal) +
+    scale_colour_manual(values = darker(d_rank_pal)) +
+    guides(fill = "none", colour = "none") +
+    theme_cowplot() +
+    scale_y_discrete(expand = expansion(add = c(0.2, 2.3))) +
+    xlab(expression(italic(F[ST]))) +
+    ylab(NULL)
+
+ridges_plot_d_rank
+```
+
+### Faceted
+
+```{r, out.width='150%'}
+ecdf_plot_face_d_rank = hits_v_controls_full %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% new_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT, nrow = 7, ncol = 4) 
+
+ecdf_plot_face_d_rank
+```
+
+```{r}
+ggsave(here::here("docs/plots/20211013_ecdf_select_faceted_with_controls_d_rank.png"),
+       plot = ecdf_plot_face_d_rank, 
+       device = "png",
+       width = 8,
+       height = 10,
+       units = "in",
+       dpi = 400)
+```
+
+
+### Together
+
+```{r}
+ecdf_plot_all_d_rank = hits_filt %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% new_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_cowplot() +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 5)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability")
+
+ecdf_plot_all_d_rank
+```
+
+### Final arranged
+
+```{r}
+final_figure = cowplot::ggdraw() +
+  draw_plot(ridges_plot_d_rank,
+            x = 0, y = 0, width = .5, height = 1) +
+  draw_plot(ecdf_plot_face_d_rank,
+            x = .5, y = 0.35, width = .5, height = .65) +
+  draw_plot(ecdf_plot_all_d_rank,
+            x = .5, y = 0, width = .5, height = .35) +
+  draw_plot_label(label = c("A", "B", "C"), size = 25,
+                  x = c(0, .5, .5), y = c(1, 1, .35),
+                  hjust = c(-.15, .15, .15),
+                  color = "#37323E")
+```
+
+```{r, eval = F}
+width = 12
+height = 12
+
+ggsave(here::here("docs/plots/20211013_final.png"),
+       final_figure,
+       device = "png",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20211013_final.svg"),
+       final_figure,
+       device = "svg",
+       width = width,
+       height = height,
+       units = "in")
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20211013_final.png"))
+```
+

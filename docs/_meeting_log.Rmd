@@ -1,0 +1,101 @@
+---
+title: "Meeting log"
+author: "Ian Brettell"
+date: '`r format(Sys.Date())`'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    dev: 'svg'
+    number_sections: false
+    keep_md: false
+    pandoc_args: --lua-filter=color-text.lua
+    highlight: pygments
+---
+
+```{r, include = F}
+library(here)
+source(here::here("code/scripts/20210628_source.R"))
+```
+
+# 7 October 2021
+
+Rank by D-statistic.
+
+# 30 September 2021
+
+* How to add stars: <https://rpkgs.datanovia.com/ggpubr/reference/stat_pvalue_manual.html>
+
+# 22 September 2021
+
+To discuss:
+* Colour scale based on ranked median Fst
+* Confirm use of Biobank data for height distribution comparisons
+* Alternative to p-value for KS-test comparisons
+* Harden's new book
+
+# 9 August 2021
+
+Now using high coverage data aligned to GRCh38 (https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased) instead of variants lifted over from GRCh37 (https://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype).
+
+**Reason**: known issues in liftovers. The readme for the lifted-over variants here: http://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype/README_GRCh38_genotypes.20170504 refers to the original README here: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/GRCh38_positions/README_GRCh38_liftover_20170504.txt, which sets out the issues.
+
+Compare number of annotated SNPs:
+```{bash, eval = F}
+# Old
+tail -n+2 mafs/1kg/20150319/all/all.csv | cut -f3 -d',' | grep -v "\." | wc -l
+## 76734695
+
+# New
+tail -n+2 mafs/1kg/20201028/all/all.csv | cut -f3 -d',' | grep -v "\." | wc -l
+## 66809807
+```
+
+So there are about 10M fewer annotated SNPs in the new version.
+
+## Counts
+
+* 3549 traits in GWAS Catalog at data of collection (9 August 2021)
+* 2961 traits with at least 1 SNP association
+* 2045 traits with at least 1 SNP post-clumping
+* 587 traits with at least 10 SNPs post-clumping
+
+# 5 August 2021
+
+**Meeting with Ewan**
+
+* Remove lip morphology
+* Add COVID-19
+* Re-order traits by median
+* Add control SNPs
+
+# 20 July 2021
+
+**Notes on counts**:
+
+* Number of traits in GWAS Catalog (after filtering for `CHEBI:7916`, which threw an error:
+  - **`r readr::read_tsv(here::here("code/snakemake/20210625/config/20210628_all_traits.tsv")) %>% nrow(.)`**
+* Number of traits after filtering for those with at least 50 unique SNP associations:
+  - **`r readr::read_tsv(here::here("code/snakemake/20210625/config/20210628_filtered_traits.tsv")) %>% nrow(.)`**
+* Number of traits with at least 1 unique SNP association after clumping, with a genome-wide p-value of less than 10e-8:
+  - **`r length(unique(fst_clumped_df$EFO_ID))`**
+
+# 16 July 2021
+
+## Attendees
+
+* Ewan Birney
+* Aylwyn Scally
+* Ian Brettell
+
+## Notes
+
+* Viral load: what is it? 
+  - Suppression of low $F_{ST}$.
+  - [ACTION]{color="red"}: Studies done in Africa?
+* Expectations re: curve
+  - Take same number of post-clumped SNPs from height as there are for pigmentation, but ranked by p-value. Does it skew in the same way?
+  - Makes sense that stronger SNPs would have a flatter eCDF because they would be adaptive in all environments.
+* [ACTION]{color="red"}: Add Covid to analysis. Ewan to find SNPs from latest GWAS.
+* [ACTION]{color="red"}: Ian to set up Google Doc for manuscript.
+  

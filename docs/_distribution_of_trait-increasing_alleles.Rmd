@@ -1,0 +1,220 @@
+---
+title: "Distribution of trait-increasing alleles across 26 populations"
+author: "Ian Brettell"
+date: '`r format(Sys.Date())`'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    dev: 'svg'
+    number_sections: true
+    keep_md: false
+    pandoc_args: --lua-filter=color-text.lua
+    highlight: pygments
+#output: html_notebook
+#editor_options: 
+#  chunk_output_type: inline
+---
+
+# Source libraries, functions and plotting parameters
+
+```{r, warning = F, message = F}
+library(here)
+
+source(here::here("code", "scripts", "source.R"))
+```
+
+# Read and process data 
+
+```{r, message = F, results = "hide"}
+# Variables
+gcat_traits = gwasrapidd::get_traits(efo_trait = target_traits)
+trait_ids = gcat_traits@traits$efo_id
+names(trait_ids) = trait_ids
+target_dir = here::here("data/gwasrapidd/20210525")
+
+# Read in raw associations objects
+assocs_raw = lapply(trait_ids, function(TRAIT_ID){
+  readRDS(file.path(target_dir, "associations_raw", paste(TRAIT_ID, ".rds", sep = "")))
+})
+
+# Read in raw studies objects
+studies_raw = lapply(trait_ids, function(TRAIT_ID){
+  readRDS(file.path(target_dir, "studies_raw", paste(TRAIT_ID, ".rds", sep = "")))
+})
+
+# Read in association-study key
+studies_key = lapply(trait_ids, function(TRAIT_ID){
+  readRDS(file.path(target_dir, "studies_key", paste(TRAIT_ID, ".rds", sep = "")))  
+})
+
+# Read in genotypes from VCFs
+genos_raw = lapply(trait_ids, function(TRAIT_ID){
+  path = file.path(target_dir, "vcfs", paste(TRAIT_ID, ".vcf.gz", sep = ""))
+  n_variants = nrow(pegas::VCFloci(path))
+  pegas::read.vcf(path, to = n_variants)
+})
+
+# Read in loci from VCFs
+loci_info = lapply(trait_ids, function(TRAIT_ID){
+  out = pegas::VCFloci(file.path(target_dir, "vcfs", paste(TRAIT_ID, ".vcf.gz", sep = "")))
+  out %>%
+    dplyr::mutate(CHROM = as.double(CHROM))
+})
+
+# Create vector of populations
+## Read in population file
+pop_file = readr::read_csv(here::here("data/1kg_populations.csv"))
+## Create vector of populations
+populations = unlist(lapply(rownames(genos_raw[[1]]), function(sample){
+    pop_file$Population[pop_file$Sample == sample]
+}))
+## Create data frame with just 2,504 individuals
+pops_1kg = pop_file %>% 
+  dplyr::filter(Sample %in% rownames(genos_raw[[1]]))
+
+# Read in clumped SNPs
+clumped = lapply(trait_ids, function(TRAIT_ID){
+  readr::read_delim(file.path(target_dir, "plink/clumped", paste(TRAIT_ID, ".clumped", sep = "")),
+                    delim = " ", trim_ws = T)
+})
+
+# Read in 012 genotypes
+genos_012 = lapply(trait_ids, function(TRAIT_ID){
+  readr::read_tsv(file.path(target_dir, "plink/recode_012", paste(TRAIT_ID, ".traw", sep = ""))) %>% 
+    # rename columns to remove duplicated ID
+    dplyr::rename_with(~str_split(.x, pattern = "_", simplify = T) %>% 
+                       subset(select = 1),
+                       .cols = matches("_"))
+})
+```
+
+## Get allele counts
+
+```{r}
+increase_allele_counts = lapply(trait_ids, function(TRAIT_ID){
+  
+  # Get risk allele and direction
+  out = dplyr::left_join(assocs_raw[[TRAIT_ID]]@associations %>% 
+              dplyr::select(association_id, pvalue, beta_direction),
+            assocs_raw[[TRAIT_ID]]@risk_alleles %>% 
+              dplyr::select(association_id, variant_id, risk_allele),
+            by = "association_id") %>% 
+    # Filter for clumped SNPS
+    dplyr::filter(variant_id %in% clumped[[TRAIT_ID]]$SNP) %>% 
+    # Bind with 012 genotypes
+    left_join(.,
+              genos_012[[TRAIT_ID]],
+              by = c("variant_id" = "SNP")) %>% 
+    # Find whether the risk allele is COUNTED or ALT in 012 genotypes
+    dplyr::mutate(RISK_ALLELE = dplyr::case_when(
+      risk_allele == COUNTED ~ "counted",
+      risk_allele == ALT ~ "alt",
+      TRUE ~ NA_character_
+      )
+    ) %>% 
+    # Specify the "increase" allele to count 
+    dplyr::mutate(TO_COUNT = dplyr::case_when(
+      beta_direction == "increase" & RISK_ALLELE == "counted" ~ "COUNTED",
+      beta_direction == "increase" & RISK_ALLELE == "alt" ~ "ALT",
+      beta_direction == "decrease" & RISK_ALLELE == "counted" ~ "ALT",
+      beta_direction == "decrease" & RISK_ALLELE == "alt" ~ "COUNTED",
+      TRUE ~ NA_character_
+      )
+    ) %>% 
+    # Swap counts if TO_COUNT == "ALT". This leaves the genotype as NA if TO_COUNT is NA
+    dplyr::mutate(dplyr::across(all_of(pops_1kg$Sample),
+                                ~dplyr::case_when(
+                                  TO_COUNT == "ALT" ~ dplyr::recode(.x,
+                                                                    `0` = 2,
+                                                                    `2` = 0),
+                                  TO_COUNT == "COUNTED" ~ .x,
+                                  ))) %>% 
+  # Pivot longer and get allele counts
+    tidyr::pivot_longer(cols = all_of(pops_1kg$Sample),
+                        names_to = "SAMPLE",
+                        values_to = "INCREASE_ALLELE_COUNT") %>% 
+    # add population
+    dplyr::inner_join(.,
+                     pops_1kg,
+                     by = c("SAMPLE" = "Sample")) %>% 
+    # factor `Population` to order
+    dplyr::mutate(Population = factor(Population, levels = names(onekg_pal))) %>% 
+    # factor `INCREASE_ALLELE_COUNT` to order
+    dplyr::mutate(INCREASE_ALLELE_COUNT = factor(INCREASE_ALLELE_COUNT, levels = c(0:2, NA))) %>% 
+    # Remove duplicate SNPs
+    ## First those with NA in `TO_COUNT`
+#    dplyr::filter((duplicated(.$variant_id) == F | duplicated(.$variant_id, fromLast = T)) & is.na(TO_COUNT)) %>%
+    ## Then other duplicates
+#    dplyr::distinct(variant_id, .keep_all = T) %>% 
+    # Get per-population counts of 0,1,2, and NA
+    dplyr::group_by(Population) %>% 
+    dplyr::count(INCREASE_ALLELE_COUNT) %>% 
+    dplyr::ungroup()
+  return(out)
+})
+
+```
+
+# Plot 
+
+## Counts including NAs 
+
+To show the number of SNPs for which direction of effect was unavailable.
+
+```{r, results = "hide"}
+increase_allele_counts %>% 
+  dplyr::bind_rows(.id = "efo_id") %>% 
+  dplyr::left_join(.,
+                   gcat_traits@traits %>% 
+                     dplyr::select(efo_id, trait),
+                   by = "efo_id") %>% 
+  dplyr::mutate(TRAIT = dplyr::recode(trait, !!!pig_recode_vec),
+                TRAIT = factor(TRAIT, levels = extended_traits)) %>% 
+  dplyr::group_by(TRAIT) %>% 
+  dplyr::group_map(
+    ~ggplot(.x) +
+      geom_col(aes(INCREASE_ALLELE_COUNT, n, fill = Population)) +
+      facet_wrap(~Population) +
+      scale_fill_manual(values = onekg_pal) +
+      theme_bw() +
+      ggtitle(unique(.x$TRAIT)) + 
+      guides(fill = F) +
+      xlab("Count of allele associated with increase in trait"),
+  .keep = T)
+
+```
+
+## Counts excluding NAs 
+
+Now showing counts as proportions
+
+```{r, results = "hide"}
+increase_allele_counts %>% 
+  dplyr::bind_rows(.id = "efo_id") %>% 
+  # add trait names
+  dplyr::left_join(.,
+                   gcat_traits@traits %>% 
+                     dplyr::select(efo_id, trait),
+                   by = "efo_id") %>% 
+  # combine pigmentation traits and order traits
+  dplyr::mutate(TRAIT = dplyr::recode(trait, !!!pig_recode_vec),
+                TRAIT = factor(TRAIT, levels = extended_traits)) %>% 
+  # remove NAs
+  dplyr::filter(!is.na(INCREASE_ALLELE_COUNT)) %>% 
+  # group by population and calculate proportions
+  dplyr::group_by(Population, TRAIT) %>% 
+  dplyr::mutate(FREQ = n / sum(n)) %>% 
+  dplyr::ungroup(Population) %>% 
+  # Plot for each TRAIT
+  dplyr::group_map(
+    ~ggplot(.x) +
+      geom_col(aes(INCREASE_ALLELE_COUNT, FREQ, fill = Population)) +
+      facet_wrap(~Population) +
+      scale_fill_manual(values = onekg_pal) +
+      theme_bw() +
+      ggtitle(unique(.x$TRAIT)) + 
+      guides(fill = F) +
+      xlab("Count of allele associated with increase in trait"),
+  .keep = T)
+```
