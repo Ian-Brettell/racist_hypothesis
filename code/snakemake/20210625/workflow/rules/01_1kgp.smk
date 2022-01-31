@@ -1,3 +1,5 @@
+# Old rule for downloading pre-annotated 1KG data.
+# The high-coverage sequence data is not annotated so we need to do it ourselves.
 #rule download_1KG_38_annotated:
 #    params:
 #        input = os.path.join(config["ftp_dir_1kg_38_annotated"], "ALL.chr{chr}.phase3_shapeit2_mvncall_integrated_v3plus_nounphased.rsID.genotypes.GRCh38_dbSNP.vcf{gz_ext}")
@@ -164,45 +166,6 @@ rule filter_highcov_samples:
                 2> {log}
         """        
 
-# When trying to merge, get the following error:
-#Caused by: htsjdk.tribble.TribbleException$InvalidHeader: Your input file has a malformed header: Unclosed quote in header line value <ID=ssID,Number=A,Type=String,Description=dbSNP ssID of the allele">
-# Therefore created a new header file with:
-# bcftools view /hps/nobackup/birney/users/ian/hmn_fst/vcfs/1kg/20150319/chrs/1.vcf.gz | grep "#" > /hps/nobackup/birney/users/ian/hmn_fst/vcfs/1kg/20150319/new_header.vcf
-# Then manually inserted the missing quote. Use that file to re-header all VCFs before merging
-
-#rule fix_vcf_headers:
-#    input:
-#        os.path.join(config["working_dir"], "vcfs/1kg/20150319/chrs/{chr}.vcf.gz")
-#    output:
-#        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz")
-#    log:
-#        os.path.join(config["log_dir"], "fix_vcf_headers/{chr}.log")
-#    container:
-#        config["bcftools"]
-#    shell:
-#        """
-#        bcftools reheader \
-#            --header {config[new_header]} \
-#            --output {output} \
-#            {input}
-#        """
-
-#rule index_vcfs:
-#    input:
-#        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz")
-#    output:
-#        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz.tbi")
-#    log:
-#        os.path.join(config["log_dir"], "index_vcfs/{chr}.log")
-#    container:
-#        config["bcftools"]
-#    shell:
-#        """
-#        bcftools index \
-#            --tbi \
-#            {input}
-#        """
-
 rule index_vcfs:
     input:
         os.path.join(config["lts_dir"], "vcfs/1kg/20201028/2504_samples/{chr}.vcf.gz")
@@ -218,63 +181,6 @@ rule index_vcfs:
             --tbi \
             {input}
         """
-
-#rule concat_vcfs:
-#    input:
-#        expand(os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz"),
-#                chr = CHRS
-#        )
-#    output:
-#        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz")
-#    log:
-#        os.path.join(config["log_dir"], "concat_vcfs/all.log")
-#    container:
-#        config["bcftools"]
-#    shell:
-#        """
-#        bcftools concat \
-#            --output {output} \
-#            --output-type z \
-#            {input}
-#        """
-
-#rule index_full_vcf:
-#    input:
-#        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz")
-#    output:
-#        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/all/all.vcf.gz.tbi")
-#    log:
-#        os.path.join(config["log_dir"], "index_full_vcf/all.log")
-#    container:
-#        config["bcftools"]
-#    shell:
-#        """
-#        bcftools index \
-#            --tbi \
-#            {input}
-#        """
-
-# Get minor allele frequencies of all variants in VCF    
-#rule get_mafs:
-#    input:
-#        os.path.join(config["lts_dir"], "vcfs/1kg/20150319/reheaded/{chr}.vcf.gz")
-#    output:
-#        os.path.join(config["lts_dir"], "mafs/1kg/20150319/by_chr/{chr}.csv")
-#    log:
-#        os.path.join(config["log_dir"], "get_mafs/{chr}.log")
-#    container:
-#        config["bcftools"]
-#    shell:
-#        """
-#        bcftools view \
-#            --max-alleles 2 \
-#            --output-type u \
-#            {input} |\
-#        bcftools query \
-#            --format '%CHROM,%POS,%ID,%REF,%ALT,%EAS_AF,%AMR_AF,%AFR_AF,%EUR_AF,%SAS_AF\\n' \
-#            --output {output} \
-#                2> {log}
-#        """
 
 rule get_mafs:
     input:
@@ -296,24 +202,6 @@ rule get_mafs:
             --output {output} \
                 2> {log}
         """
-
-#rule combine_mafs:
-#    input:
-#        expand(os.path.join(config["lts_dir"], "mafs/1kg/20150319/by_chr/{chr}.csv"),
-#                chr = CHRS)
-#    output:
-#        os.path.join(config["lts_dir"], "mafs/1kg/20150319/all/all.csv")
-#    log:
-#        os.path.join(config["log_dir"], "combine_mafs/all.log")
-#    params:
-#        header = "'CHROM,POS,ID,REF,ALT,EAS_AF,AMR_AF,AFR_AF,EUR_AF,SAS_AF'"
-#    container:
-#        config["bash"]
-#    shell:
-#        """
-#        echo {params.header} > {output} ;
-#        cat {input} >> {output}
-#        """
 
 rule combine_mafs:
     input:

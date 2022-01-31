@@ -14,8 +14,6 @@ tmp_dir:
 #####################
 #trait_ids_file:
 #    code/snakemake/20210625/config/trait_ids.tsv
-#additional_traits:
-#    - COVID-19
 contigs:
     - 1
     - 2
@@ -86,8 +84,6 @@ dbsnp_vcf_prefix:
     ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/00-All.vcf
 1kgp_2504_samples:
     code/snakemake/20210625/config/1kgp_2504_samples.txt
-#new_header:
-#    data/1kg/20150319/new_header.vcf
 ftp_pop_file:
     https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx
 local_pop_file:
