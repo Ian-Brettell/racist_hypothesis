@@ -557,6 +557,38 @@ ggsave(here::here("docs/plots/20211013_ecdf_select_faceted_with_controls_d_rank.
        dpi = 400)
 ```
 
+```{r, include = F, eval = F}
+ecdf_plot_face_d_rank = hits_v_controls_full %>%
+  # filter for `target_traits`
+  dplyr::filter(TRAIT %in% new_traits) %>%
+  # take unique SNPs
+  dplyr::group_by(EFO_ID) %>%
+  dplyr::distinct(SNP, .keep_all = T) %>% 
+  dplyr::ungroup() %>% 
+  # order FST_PEGAS so that it's properly plotted by plotly
+  dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
+  # order
+  dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal)),
+                PAL_TRAIT = factor(PAL_TRAIT, levels = names(d_rank_pal))) %>% 
+  ggplot() +
+    stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
+    scale_colour_manual(values = d_rank_pal) +
+    theme_cowplot(rel_small = 9/14) +
+    guides(colour = "none") +
+    theme(strip.text.x = element_text(size = 7)) +
+    xlab(expression(italic(F[ST]))) +
+    ylab("Cumulative Probability") +
+    facet_wrap(~TRAIT, nrow = 7, ncol = 4) 
+# Save different size for slides
+ggsave(here::here("docs/plots/20220131_ecdf_select_faceted_with_controls_d_rank.png"),
+       plot = ecdf_plot_face_d_rank, 
+       device = "png",
+       width = 8,
+       height = 6.4,
+       units = "in",
+       dpi = 400)
+```
+
 
 ### Together
 

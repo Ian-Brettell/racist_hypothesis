@@ -31,4 +31,22 @@ EFO_IDS_FILT = filt_traits["EFO_ID"]
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 FTP = FTPRemoteProvider()
 
+# Create combinations of clumping parameters and efo_ids
+# Put into dictionary
+in_dict = {'clump_r2': config["clump_r2"], 'clump_kb': config["clump_kb"]}
+# Create data frame from dictionary
+new_df = pd.DataFrame(in_dict)
+# Repeat by length of EFO_IDS_FILT list
+new_df_rep = pd.concat([new_df]*len(EFO_IDS_FILT), ignore_index = True)
+# Add efo_ids column
+new_df_rep["efo_id"] = EFO_IDS_FILT.values.tolist() * len(new_df)
+
+# Create columns for zipping
+EFO_IDS_FILT_ZIP = new_df_rep["efo_id"]
+CLUMP_R2_ZIP = new_df_rep["clump_r2"]
+CLUMP_KB_ZIP = new_df_rep["clump_kb"]
+DATE_OF_COLLECTION_ZIP = [config["date_of_gwas_collection"]]*len(EFO_IDS_FILT_ZIP)
+
+
+
 

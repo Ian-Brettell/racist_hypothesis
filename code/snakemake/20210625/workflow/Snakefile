@@ -6,10 +6,10 @@ include: "rules/03_data_extraction.smk"
 
 rule all:
     input:
-###############
-# 00_common.smk
-###############
-        config["trait_ids_file"],
+################
+## 00_common.smk
+################
+#        config["trait_ids_file"],
 ################
 ## 01_1kgp.smk
 ################
@@ -87,25 +87,37 @@ rule all:
 #            efo_id = EFO_IDS
 #        ),
 ## clump_snps
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/plink/clumped/{efo_id}.log"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/plink/clumped/{clump_r2}_{clump_kb}/{efo_id}.log"),
+#            zip,
+#            clump_r2 = CLUMP_R2_ZIP,
+#            clump_kb = CLUMP_KB_ZIP,
+#            date = DATE_OF_COLLECTION_ZIP,
+#            efo_id = EFO_IDS_FILT_ZIP
 #        ),
 ## pull_clumped_ids
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/top_clumped/{efo_id}.txt"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/top_clumped/{clump_r2}_{clump_kb}/{efo_id}.txt"),
+#            zip,
+#            clump_r2 = CLUMP_R2_ZIP,
+#            clump_kb = CLUMP_KB_ZIP,
+#            date = DATE_OF_COLLECTION_ZIP,
+#            efo_id = EFO_IDS_FILT_ZIP
 #        ),
 ## extract_top_clumped
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/hits/{efo_id}.vcf.gz"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/hits/{clump_r2}_{clump_kb}/{efo_id}.vcf.gz"),
+#            zip,
+#            clump_r2 = CLUMP_R2_ZIP,
+#            clump_kb = CLUMP_KB_ZIP,
+#            date = DATE_OF_COLLECTION_ZIP,
+#            efo_id = EFO_IDS_FILT_ZIP
 #        ),
-## get_ref_mafs
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/{efo_id}.csv"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT
-#        ),
+# get_ref_mafs
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/{clump_r2}_{clump_kb}/{efo_id}.csv"),
+            zip,
+            clump_r2 = CLUMP_R2_ZIP,
+            clump_kb = CLUMP_KB_ZIP,
+            date = DATE_OF_COLLECTION_ZIP,
+            efo_id = EFO_IDS_FILT_ZIP
+        ),
 ## get_control_snps
 #        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/{efo_id}.txt"),
 #            date = DATE_OF_COLLECTION,

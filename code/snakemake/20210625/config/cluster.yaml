@@ -3,6 +3,12 @@ __default__:
   n: 1
   name: "{rule}.{wildcards}"
   outfile: "{log}"
+  queue: short
+# 03_data_extraction.smk
+pull_clumped_ids:
+  memory: "{resources.mem_mb}"
+extract_top_clumped:
+  memory: "{resources.mem_mb}"
 get_ref_mafs:
   memory: "{resources.mem_mb}"
 get_fst_hits:
@@ -13,4 +19,5 @@ consolidate_fst_hits:
   memory: "{resources.mem_mb}" 
 consolidate_fst_controls:
   memory: "{resources.mem_mb}" 
+
 
