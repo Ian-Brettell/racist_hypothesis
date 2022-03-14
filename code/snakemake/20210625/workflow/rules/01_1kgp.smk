@@ -175,12 +175,63 @@ rule index_vcfs:
         os.path.join(config["log_dir"], "index_vcfs/{chr}.log")
     container:
         config["bcftools"]
+    resources:
+        mem_mb = 500
     shell:
         """
         bcftools index \
             --tbi \
             {input}
         """
+
+rule combine_1kg_vcfs:
+    input:
+        vcfs = expand(rules.filter_highcov_samples.output,
+                            chr = CHRS
+        ),
+        indexes = expand(rules.index_vcfs.output,
+                            chr = CHRS
+        ),
+    output:
+        os.path.join(
+            config["lts_dir"],
+            "vcfs/1kg/20201028/2504_samples_combined/all.vcf.gz"
+        ),
+    log:
+        os.path.join(
+            config["log_dir"],
+            "combine_1kg_vcfs/all.log"
+        ),
+    container:
+        config["bcftools"]
+    resources:
+        mem_mb = 10000
+    shell:
+        """
+        bcftools concat \
+            --output {output} \
+            --output-type z \
+            {input.vcfs} \
+                > {log} 2>&1
+        """
+
+rule index_full_1kg_vcf:
+    input:
+        rules.combine_1kg_vcfs.output
+    output:
+        rules.combine_1kg_vcfs.output[0] + ".tbi"
+    log:
+        os.path.join(config["log_dir"], "index_full_1kg_vcf/all.log")
+    container:
+        config["bcftools"]
+    resources:
+        mem_mb = 5000
+    shell:
+        """
+        bcftools index \
+            --tbi \
+            {input}
+        """   
 
 rule get_mafs:
     input:
@@ -221,33 +272,34 @@ rule combine_mafs:
         cat {input} >> {output}
         """
 
-rule get_population_file:
-    input:
-        FTP.remote(config["ftp_pop_file"], keep_local = True)
-    output:
-        config["local_pop_file"]
-    log:
-        os.path.join(config["log_dir"], "get_population_file/all.log")
-    run:
-        pop_file = pd.read_excel(input[0], sheet_name = "Sample Info")
-        pop_file = pop_file.loc[:, ['Sample', 'Population']]
-        pop_file.to_csv(output[0], index = False)
-
-rule get_population_file_plink:
-    input:
-        FTP.remote(config["ftp_pop_file"], keep_local = True)
-    output:
-        config["local_pop_file_plink"]
-    log:
-        os.path.join(config["log_dir"], "get_population_file_plink/all.log")
-    run:
-        pop_file = pd.read_excel(input[0], sheet_name = "Sample Info")
-        pop_file = pop_file.loc[:, ['Sample', 'Population']]
-        # Create second column of samples as IIDs
-        pop_file['Sample_2'] = pop_file['Sample']
-        # Rename columns
-        pop_file = pop_file.rename(columns = {"Sample" : "FID", "Sample_2" : "IID", "Population" : "CLUSTER"})
-        # Re-order columns
-        pop_file = pop_file[['FID', 'IID', 'CLUSTER']]
-        # Write to file
-        pop_file.to_csv(output[0], sep = "\t", header = False, index = False)
+## Hashed out because the FTP.remote function can cause problems when building the DAG
+#rule get_population_file:
+#    input:
+#        FTP.remote(config["ftp_pop_file"], keep_local = True)
+#    output:
+#        config["local_pop_file"]
+#    log:
+#        os.path.join(config["log_dir"], "get_population_file/all.log")
+#    run:
+#        pop_file = pd.read_excel(input[0], sheet_name = "Sample Info")
+#        pop_file = pop_file.loc[:, ['Sample', 'Population']]
+#        pop_file.to_csv(output[0], index = False)
+#
+#rule get_population_file_plink:
+#    input:
+#        FTP.remote(config["ftp_pop_file"], keep_local = True)
+#    output:
+#        config["local_pop_file_plink"]
+#    log:
+#        os.path.join(config["log_dir"], "get_population_file_plink/all.log")
+#    run:
+#        pop_file = pd.read_excel(input[0], sheet_name = "Sample Info")
+#        pop_file = pop_file.loc[:, ['Sample', 'Population']]
+#        # Create second column of samples as IIDs
+#        pop_file['Sample_2'] = pop_file['Sample']
+#        # Rename columns
+#        pop_file = pop_file.rename(columns = {"Sample" : "FID", "Sample_2" : "IID", "Population" : "CLUSTER"})
+#        # Re-order columns
+#        pop_file = pop_file[['FID', 'IID', 'CLUSTER']]
+#        # Write to file
+#        pop_file.to_csv(output[0], sep = "\t", header = False, index = False)

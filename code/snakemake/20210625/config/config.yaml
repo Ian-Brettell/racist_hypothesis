@@ -41,23 +41,19 @@ gz_exts:
     - .gz
     - .gz.tbi
 date_of_gwas_collection:
-    20210809
+    - 20210809
 # Note the order of `clump_r2` and `clump_kb` is important
 # as they get zipped together, (to avoid all combinations)
 # so we want to combine:
 # the most stringent (i.e. r2=0.1 and kb=1000), and
 # the most lenient (i.e r2=0.5 and kb=250)
-clump_r2:
-    - 0.1
-    - 0.2
-    - 0.5
-clump_kb:
-    - 1000
-    - 500
-    - 250
-# EFO ID for body height
-ref_efo_id:
-    EFO_0004339
+clump_r2_kb:
+    - "0.1_1000"
+    - "0.2_500"
+    - "0.5_250"
+## EFO ID for body height
+#ref_efo_id:
+#    EFO_0004339
 # Percentile bin range to gather control SNPs
 percent_interval:
     5

@@ -92,17 +92,17 @@ lapply(all_traits_tbl$efo_id, function(EFO_ID) {
 })
 ```
 
-
 # Run Snakemake pipeline to extract data
 
 Full Snakemake pipeline here: <https://github.com/brettellebi/human_traits_fst/tree/master/code/snakemake/20210625>
 
 # Read in processed data
 
-## Specify target directory
+## Specify target directory and clumping parameters
 
 ```{r}
 target_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd/20210809"
+clump_params = "0.1_1000"
 ```
 
 ## Total initial counts
@@ -152,7 +152,7 @@ min_snps = 10
 ```
 
 ```{r}
-hits_path = file.path(target_dir, "pegas/fst/consol/hits.rds")
+hits_path = file.path(target_dir, "pegas/fst/consol", clump_params, "hits.rds")
 hits = readRDS(hits_path) %>%
   lapply(., function(TRAIT_ID){
     # convert to DF
@@ -200,7 +200,7 @@ In the code below we remove all the duplicated SNPs which have periods in their 
 That is, we keep the first SNP in the genome with the ID. This would bias toward SNPs "earlier" in the genome. Probably not consequential? 
 ```{r}
 # Fst controls
-controls_path = file.path(target_dir, "pegas/fst/consol/controls.rds")
+controls_path = file.path(target_dir, "pegas/fst/consol", clump_params, "controls.rds")
 controls = readRDS(controls_path) %>%
   lapply(., function(TRAIT_ID){
     # convert to DF
@@ -276,7 +276,9 @@ plotly::ggplotly(snp_count_plot,
 width = 20
 height = 10
 
-ggsave(here::here("docs/plots/20210901_snp_counts.png"),
+dir.create(here::here("docs/plots", clump_params), recursive = T, showWarnings = T)
+
+ggsave(here::here("docs/plots", clump_params, "20220314_snp_counts.png"),
        plot = snp_count_plot,
        device = "png",
        width = width,
@@ -284,7 +286,7 @@ ggsave(here::here("docs/plots/20210901_snp_counts.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20210901_snp_counts.svg"),
+ggsave(here::here("docs/plots", clump_params, "20220314_snp_counts.svg"),
        plot = snp_count_plot,
        device = "svg",
        width = width,
@@ -386,7 +388,7 @@ ks_stats_full %>%
 ```{r}
 traits_d_ranked = ks_stats_full$TRAIT
 
-d_rank_pal = turbo(n = length(traits_d_ranked))
+d_rank_pal = viridisLite::turbo(n = length(traits_d_ranked))
 names(d_rank_pal) = traits_d_ranked
 ```
 
@@ -413,7 +415,10 @@ ecdf_plot_face_w_controls_d_rank = hits_v_controls_full %>%
     ylab("Cumulative Probability") +
     facet_wrap(~TRAIT) 
 
-ggsave(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png"),
+out_path = here::here("docs/plots", clump_params, "20220314_ecdf_all_faceted_with_controls_d_rank.png")
+dir.create(dirname(out_path), recursive = T, showWarnings = F)
+
+ggsave(out_path,
        plot = ecdf_plot_face_w_controls_d_rank, 
        device = "png",
        width = 30,
@@ -424,7 +429,7 @@ ggsave(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png
 
 
 ```{r}
-knitr::include_graphics(here::here("docs/plots/20211013_ecdf_all_faceted_with_controls_d_rank.png"))
+knitr::include_graphics(out_path)
 ```
 
 
@@ -548,7 +553,7 @@ ecdf_plot_face_d_rank
 ```
 
 ```{r}
-ggsave(here::here("docs/plots/20211013_ecdf_select_faceted_with_controls_d_rank.png"),
+ggsave(here::here("docs/plots", clump_params, "20220314_ecdf_all_faceted_with_controls_d_rank.png"),
        plot = ecdf_plot_face_d_rank, 
        device = "png",
        width = 8,
@@ -580,7 +585,7 @@ ecdf_plot_face_d_rank = hits_v_controls_full %>%
     ylab("Cumulative Probability") +
     facet_wrap(~TRAIT, nrow = 7, ncol = 4) 
 # Save different size for slides
-ggsave(here::here("docs/plots/20220131_ecdf_select_faceted_with_controls_d_rank.png"),
+ggsave(here::here("docs/plots", clump_params, "20220314_ecdf_select_faceted_with_controls_d_rank.png"),
        plot = ecdf_plot_face_d_rank, 
        device = "png",
        width = 8,
@@ -629,14 +634,14 @@ final_figure = cowplot::ggdraw() +
   draw_plot_label(label = c("A", "B", "C"), size = 25,
                   x = c(0, .5, .5), y = c(1, 1, .35),
                   hjust = c(-.15, .15, .15),
-                  color = "#37323E")
+                  color = "black")
 ```
 
-```{r, eval = F}
+```{r}
 width = 12
 height = 12
 
-ggsave(here::here("docs/plots/20211013_final.png"),
+ggsave(here::here("docs/plots", clump_params, "20220314_final.png"),
        final_figure,
        device = "png",
        width = width,
@@ -644,15 +649,17 @@ ggsave(here::here("docs/plots/20211013_final.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots/20211013_final.svg"),
+ggsave(here::here("docs/plots", clump_params, "20220314_final.pdf"),
        final_figure,
-       device = "svg",
+       device = "pdf",
        width = width,
        height = height,
-       units = "in")
+       units = "in",
+       dpi= 400)
+
 ```
 
 ```{r}
-knitr::include_graphics(here::here("docs/plots/20211013_final.png"))
+knitr::include_graphics(here::here("docs/plots", clump_params, "20220314_final.png"))
 ```
 

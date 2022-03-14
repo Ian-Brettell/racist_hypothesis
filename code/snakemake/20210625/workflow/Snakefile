@@ -44,6 +44,16 @@ rule all:
 ## index_vcfs
 #        expand(os.path.join(config["lts_dir"], "vcfs/1kg/20201028/2504_samples/{chr}.vcf.gz.tbi"),
 #            chr = CHRS),
+## combine_1kg_vcfs
+#        os.path.join(
+#            config["lts_dir"],
+#            "vcfs/1kg/20201028/2504_samples_combined/all.vcf.gz"
+#        ),
+## index_full_1kg_vcf
+#        os.path.join(
+#            config["lts_dir"],
+#            "vcfs/1kg/20201028/2504_samples_combined/all.vcf.gz.tbi"
+#        ),
 ## get_mafs
 #        expand(os.path.join(config["lts_dir"], "mafs/1kg/20201028/by_chr/{chr}.csv"),
 #                chr = CHRS
@@ -110,46 +120,64 @@ rule all:
 #            date = DATE_OF_COLLECTION_ZIP,
 #            efo_id = EFO_IDS_FILT_ZIP
 #        ),
-# get_ref_mafs
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/{clump_r2}_{clump_kb}/{efo_id}.csv"),
-            zip,
-            clump_r2 = CLUMP_R2_ZIP,
-            clump_kb = CLUMP_KB_ZIP,
-            date = DATE_OF_COLLECTION_ZIP,
-            efo_id = EFO_IDS_FILT_ZIP
-        ),
+## get_ref_mafs
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/references/{clump_r2}_{clump_kb}/{efo_id}.csv"),
+#            zip,
+#            clump_r2 = CLUMP_R2_ZIP,
+#            clump_kb = CLUMP_KB_ZIP,
+#            date = DATE_OF_COLLECTION_ZIP,
+#            efo_id = EFO_IDS_FILT_ZIP
+#        ),
 ## get_control_snps
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/{efo_id}.txt"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/controls/control_snps/{clump_r2}_{clump_kb}/{efo_id}.txt"),
+#            zip,
+#            date = DATE_OF_COLLECTION_ZIP,
+#            clump_r2 = CLUMP_R2_ZIP,
+#            clump_kb = CLUMP_KB_ZIP,
+#            efo_id = EFO_IDS_FILT_ZIP
+#        ),
+## get_control_vcf
+#        expand(os.path.join(
+#            config["working_dir"],
+#            "vcfs/1kg/20201028/controls/{date}/{clump_r2_kb}/{efo_id}/all/{efo_id}.vcf.gz"),
+#                    date = DATE_OF_COLLECTION,
+#                    clump_r2_kb = CLUMP_R2_KB,
+#                    efo_id = EFO_IDS_FILT
 #        ),
 ## get_control_vcf_chr
-#        expand(os.path.join(config["working_dir"], "vcfs/1kg/20201028/controls/{date}/{efo_id}/by_chr/{chr}.vcf.gz"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT,
-#            chr = CHRS
+#        expand(os.path.join(
+#            config["lts_dir"],
+#            "gwasrapidd/{date}/high_cov/vcfs/controls/{clump_r2_kb}/{efo_id}/by_chr/{chr}.vcf.gz"),
+#                    date = DATE_OF_COLLECTION,
+#                    clump_r2_kb = CLUMP_R2_KB[0],
+#                    efo_id = EFO_IDS_FILT[0],
+#                    chr = CHRS
 #        ),
 ## merge_control_vcf
 #        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/high_cov/vcfs/controls/{efo_id}.vcf.gz"),
 #            date = DATE_OF_COLLECTION,
 #            efo_id = EFO_IDS_FILT
 #        ),
-## get_fst_hits
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/hits/{efo_id}.rds"),
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT
-#        ),
-## get_fst_controls
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/controls/{efo_id}.rds"),    
-#            date = DATE_OF_COLLECTION,
-#            efo_id = EFO_IDS_FILT
-#        ),
-## consolidate_fst_hits
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/hits.rds"),
-#            date = DATE_OF_COLLECTION
-#        ),
-## consolidate_fst_controls
-#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/controls.rds"),
-#            date = DATE_OF_COLLECTION
-#        ),
+# get_fst_hits
+        expand(os.path.join(config["working_dir"], "gwasrapidd/{date}/pegas/fst/hits/{clump_r2_kb}/{efo_id}.rds"),
+            date = DATE_OF_COLLECTION,
+            efo_id = EFO_IDS_FILT,
+            clump_r2_kb = CLUMP_R2_KB
+        ),
+# get_fst_controls
+        expand(os.path.join(config["working_dir"], "gwasrapidd/{date}/pegas/fst/controls/{clump_r2_kb}/{efo_id}.rds"),    
+            date = DATE_OF_COLLECTION,
+            efo_id = EFO_IDS_FILT,
+            clump_r2_kb = CLUMP_R2_KB
+        ),
+# consolidate_fst_hits
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/{clump_r2_kb}/hits.rds"),
+            date = DATE_OF_COLLECTION,
+            clump_r2_kb = CLUMP_R2_KB
+        ),
+# consolidate_fst_controls
+        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/{clump_r2_kb}/controls.rds"),
+            date = DATE_OF_COLLECTION,
+            clump_r2_kb = CLUMP_R2_KB
+        ),
 

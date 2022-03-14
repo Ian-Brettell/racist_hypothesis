@@ -2,7 +2,7 @@
 
 ssh codon
 module load singularity-3.7.0-gcc-9.3.0-dp5ffrp
-bsub -M 20000 -Is bash
+bsub -M 20000 -q short -Is bash
 cd /hps/software/users/birney/ian/repos/human_traits_fst
 conda activate snakemake_6.12.1
 smk_proj="20210625"
@@ -15,6 +15,20 @@ snakemake \
   --rerun-incomplete \
   --use-conda \
   --use-singularity \
+  -s code/snakemake/$smk_proj/workflow/Snakefile \
+  -p
+
+# With restarts
+snakemake \
+  --jobs 5000 \
+  --latency-wait 300 \
+  --cluster-config code/snakemake/$smk_proj/config/cluster.yaml \
+  --cluster 'bsub -g /snakemake_bgenie -J {cluster.name} -q {cluster.queue} -n {cluster.n} -M {cluster.memory} -o {cluster.outfile}' \
+  --keep-going \
+  --rerun-incomplete \
+  --use-conda \
+  --use-singularity \
+  --restart-times 4 \
   -s code/snakemake/$smk_proj/workflow/Snakefile \
   -p
 

@@ -106,20 +106,6 @@ target_traits = c("body height",
                   "low density lipoprotein cholesterol measurement",
                   "platelet count")
 
-## Clumping target parameter
-clump_param = "r2-0.1_kb-1000"
-
-# Factor levels for `trait` (or `PHENO`)
-trait_levels = c("hei", "bmi", "edu", "int", "ibd", "pig")
-names(trait_levels) = trait_levels
-
-trait_levels_verb =  c("Height",
-                       "BMI",
-                       "Educational attainment",
-                       "Intelligence",
-                       "IBD",
-                       "Pigmentation")
-names(trait_levels_verb) = trait_levels_verb
 
 # Factor levels for `HIT_CONTROL`
 hit_control_levels = c("hit", "control")

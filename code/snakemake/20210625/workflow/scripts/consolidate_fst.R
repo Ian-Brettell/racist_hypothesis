@@ -1,3 +1,8 @@
+# Send log
+
+log <- file(snakemake@log[[1]], open="wt")
+sink(log)
+sink(log, type = "message")
 
 # Read RDS files into list
 out = lapply(snakemake@input[["rds"]], function(RDS){
