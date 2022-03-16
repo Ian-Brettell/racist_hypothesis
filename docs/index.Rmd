@@ -395,41 +395,102 @@ names(d_rank_pal) = traits_d_ranked
 ## Plot faceted eCDFs of all traits ranked by difference from controls
 
 ```{r}
+# Get length of strings in traits to add newlines for plotting
+trait_strings = hits_v_controls_full %>% 
+  dplyr::distinct(TRAIT) %>% 
+  dplyr::mutate(N_CHAR = stringr::str_length(TRAIT),
+                # middle character
+                MID_CHAR = N_CHAR / 2,
+                # number of spaces
+                N_SPACES = stringr::str_count(TRAIT, pattern = " "),
+                # Get location of spaces
+                SPACE_LOCS = ifelse(N_CHAR > 25,
+                                   stringr::str_locate_all(TRAIT, " "),
+                                   NA))
+
+counter = 0
+TARGET_LOCS = lapply(trait_strings$SPACE_LOCS, function(TRAIT){
+  counter <<- counter + 1
+  if(!is.na(TRAIT[1])){
+    mid_char = trait_strings$MID_CHAR[counter]
+    # pull out the location of the space closest to the middle character
+    out = TRAIT[which(abs(TRAIT - mid_char) == min(abs(TRAIT - mid_char)))[1]]
+  }
+  else {
+    out = NA
+  }
+  
+  return(out)
+}) %>% unlist()
+TARGET_LOCS = unname(TARGET_LOCS)
+
+
+NEW_TRAIT = trait_strings$TRAIT
+# Replace space in string with new line
+substring(NEW_TRAIT, TARGET_LOCS, TARGET_LOCS) = "\n"
+# Add back to DF
+trait_strings = trait_strings %>% 
+  dplyr::mutate(NEW_TRAIT = NEW_TRAIT) %>% 
+  # fill in NAs
+  dplyr::mutate(NEW_TRAIT = ifelse(is.na(NEW_TRAIT),
+                                   TRAIT,
+                                   NEW_TRAIT))
+
+# Plot
 ecdf_plot_face_w_controls_d_rank = hits_v_controls_full %>%
+  # add traits with inserted newline
+  dplyr::left_join(.,
+                   trait_strings %>% 
+                     dplyr::select(TRAIT, NEW_TRAIT),
+                   by = "TRAIT") %>% 
   # take unique SNPs
   dplyr::group_by(EFO_ID) %>%
   dplyr::distinct(SNP, .keep_all = T) %>% 
   dplyr::ungroup() %>% 
   # order FST_PEGAS so that it's properly plotted by plotly
   dplyr::arrange(EFO_ID, FST_PEGAS) %>% 
-  # order
+  # order by rank
   dplyr::mutate(TRAIT = factor(TRAIT, levels = names(d_rank_pal)),
                 PAL_TRAIT = factor(PAL_TRAIT, levels = names(d_rank_pal))) %>% 
+  # arrange by TRAIT (now a factor)
+  dplyr::arrange(TRAIT) %>% 
+  # convert NEW_TRAIT into factor as well in same order as TRAIT
+  dplyr::mutate(NEW_TRAIT = factor(NEW_TRAIT, levels = unique(NEW_TRAIT))) %>% 
   ggplot() +
     stat_ecdf(aes(FST_PEGAS, colour = PAL_TRAIT)) +
     scale_colour_manual(values = d_rank_pal) +
     theme_cowplot(rel_small = 9/14) +
     guides(colour = "none") +
-    theme(strip.text.x = element_text(size = 5)) +
+    theme(strip.text.x = element_text(size = 4.4)) +
     xlab(expression(italic(F[ST]))) +
     ylab("Cumulative Probability") +
-    facet_wrap(~TRAIT) 
+    facet_wrap(~NEW_TRAIT) 
 
-out_path = here::here("docs/plots", clump_params, "20220314_ecdf_all_faceted_with_controls_d_rank.png")
-dir.create(dirname(out_path), recursive = T, showWarnings = F)
+out_png = here::here("docs/plots", clump_params, "20220314_ecdf_all_faceted_with_controls_d_rank.png")
+dir.create(dirname(out_png), recursive = T, showWarnings = F)
 
-ggsave(out_path,
+ggsave(out_png,
        plot = ecdf_plot_face_w_controls_d_rank, 
        device = "png",
        width = 30,
        height = 22,
        units = "in",
        dpi = 400)
+
+out_pdf = here::here("docs/plots", clump_params, "20220314_ecdf_all_faceted_with_controls_d_rank.pdf")
+
+ggsave(out_pdf,
+       plot = ecdf_plot_face_w_controls_d_rank, 
+       device = "pdf",
+       width = 38,
+       height = 28,
+       units = "in",
+       dpi = 400)
 ```
 
 
 ```{r}
-knitr::include_graphics(out_path)
+knitr::include_graphics(out_png)
 ```
 
 
