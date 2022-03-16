@@ -5,9 +5,9 @@ navbar:
   left:
     - text: "Fst of all traits in GWAS Catalog"
       href: index.html
-    - text: "Clumping params: $R^2$ = 0.2, window = 500 kb"
+    - text: "Clumping params: r^2 = 0.2, window = 500 kb"
       href: "0.2_500.html"
-    - text: "Clumping params: $R^2$ = 0.5, window = 250 kb"
+    - text: "Clumping params: r^2 = 0.5, window = 250 kb"
       href: "0.2_500.html"
 #    - text: "Previous version (20211013)"
 #      href: 20211013_version.html
