@@ -613,7 +613,7 @@ ecdf_plot_face_d_rank = hits_v_controls_full %>%
 ecdf_plot_face_d_rank
 ```
 
-```{r}
+```{r, message = F, warning = F}
 ggsave(here::here("docs/plots", clump_params, "20220314_ecdf_all_faceted_with_controls_d_rank.png"),
        plot = ecdf_plot_face_d_rank, 
        device = "png",
