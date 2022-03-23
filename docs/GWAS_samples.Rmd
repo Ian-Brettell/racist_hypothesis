@@ -1,0 +1,34 @@
+# GWAS samples
+
+```{r}
+library(tidyverse)
+library(gwasrapidd)
+```
+
+
+## Get data
+
+```{r}
+TRAIT_IDS_FILE = here::here("code/snakemake/20210625/config",
+                            paste(date_of_collection, "_all_traits.tsv", sep = ""))
+```
+
+## Read in data
+
+```{r}
+trait_ids = readr::read_tsv(TRAIT_IDS_FILE)
+
+target_traits = c("skin pigmentation",
+                  "skin pigmentation measurement",
+                  "hair shape measurement",
+                  "eye colour measurement",
+                  "body height",
+                  "body mass index",
+                  "intelligence",
+                  "self reported educational attainment")
+
+trait_df = trait_ids %>% 
+  dplyr::filter(trait %in% target_traits)
+trait_vec = trait_df$efo_id; names(trait_vec) = trait_df$trait
+```
+

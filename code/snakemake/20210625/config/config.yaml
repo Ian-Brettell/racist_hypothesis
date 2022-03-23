@@ -42,9 +42,7 @@ gz_exts:
     - .gz.tbi
 date_of_gwas_collection:
     - 20210809
-# Note the order of `clump_r2` and `clump_kb` is important
-# as they get zipped together, (to avoid all combinations)
-# so we want to combine:
+# Here we combine:
 # the most stringent (i.e. r2=0.1 and kb=1000), and
 # the most lenient (i.e r2=0.5 and kb=250)
 clump_r2_kb:
