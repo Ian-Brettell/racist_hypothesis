@@ -1,4 +1,17 @@
-# GWAS samples
+---
+title: "Samples used in GWAS for selected traits"
+author: "Ian Brettell"
+date: '`r format(Sys.Date())`'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    dev: 'svg'
+    number_sections: true
+    keep_md: false
+    pandoc_args: --lua-filter=color-text.lua
+    highlight: pygments
+---
 
 ```{r, message = F, warning = F}
 library(tidyverse)
@@ -7,7 +20,7 @@ library(DT)
 library(cowplot)
 ```
 
-## Get variables
+# Get variables
 
 ```{r}
 date_of_collection = "20210809"
@@ -28,7 +41,7 @@ studies_dir = file.path(long_term_dir,
 pal_file = here::here("code/snakemake/20210625/config/1kg_colour_palette.csv")
 ```
 
-## Read in traits file
+# Read in traits file
 
 ```{r}
 trait_ids = readr::read_tsv(TRAIT_IDS_FILE)
@@ -51,7 +64,7 @@ trait_df = trait_ids %>%
 trait_vec = trait_df$efo_id; names(trait_vec) = trait_df$trait
 ```
 
-## Read in associations files
+# Read in associations files
 
 ```{r}
 # Read in saved association files
@@ -65,7 +78,7 @@ assoc_ids = purrr::map(assoc_list, "associations") %>%
   purrr::map(unique("association_id"))
 ```
 
-## Get studies
+# Get studies
 
 NOTE: this takes time to run
 
@@ -91,7 +104,7 @@ studies = purrr::map(trait_vec, function(EFO_ID){
 })
 ```
 
-## Pull out key data
+# Pull out key data
 
 ```{r}
 df = purrr::imap(studies, function(TRAIT, NAME){
@@ -127,7 +140,7 @@ df = dplyr::bind_rows(df, .id = "efo_id") %>%
 DT::datatable(df)
 ```
 
-## Get distinct regions
+# Get distinct regions
 
 ```{r}
 df %>% 
@@ -146,9 +159,9 @@ pal_df = read_csv(pal_file)
 pal = pal_df$colour ; names(pal) = pal_df$ancestral_group
 ```
 
-## Plot
+# Plot
 
-### Number of studies
+## Number of studies
 
 ```{r}
 studies_plot = df_filt %>% 
@@ -196,7 +209,7 @@ knitr::include_graphics(here::here("docs/plots/20220324_n_ancestral_groups.png")
 ```
 
 
-### Number of individuals
+## Number of individuals
 
 ```{r}
 indivs_plot = df_filt %>% 
