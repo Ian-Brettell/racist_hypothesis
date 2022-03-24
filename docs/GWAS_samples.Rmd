@@ -1,34 +1,247 @@
 # GWAS samples
 
-```{r}
+```{r, message = F, warning = F}
 library(tidyverse)
 library(gwasrapidd)
+library(DT)
+library(cowplot)
 ```
 
-
-## Get data
+## Get variables
 
 ```{r}
+date_of_collection = "20210809"
 TRAIT_IDS_FILE = here::here("code/snakemake/20210625/config",
                             paste(date_of_collection, "_all_traits.tsv", sep = ""))
+
+long_term_dir = "/nfs/research/birney/users/ian/hmn_fst/gwasrapidd"
+
+target_dir = file.path(long_term_dir,
+                       date_of_collection,
+                       "associations_raw")
+
+studies_dir = file.path(long_term_dir,
+                        date_of_collection,
+                        "studies_raw")
+
+# 1000 Genomes palette
+pal_file = here::here("code/snakemake/20210625/config/1kg_colour_palette.csv")
 ```
 
-## Read in data
+## Read in traits file
 
 ```{r}
 trait_ids = readr::read_tsv(TRAIT_IDS_FILE)
 
-target_traits = c("skin pigmentation",
+target_traits = c("body height",
+                  "body mass index",
+                  "self reported educational attainment",
+                  "intelligence",
+                  "skin pigmentation",
                   "skin pigmentation measurement",
                   "hair shape measurement",
-                  "eye colour measurement",
-                  "body height",
-                  "body mass index",
-                  "intelligence",
-                  "self reported educational attainment")
+                  "eye colour measurement")
+
+tt_newline = target_traits %>% 
+  stringr::str_replace_all(pattern = " ",
+                           replacement = "\n")
 
 trait_df = trait_ids %>% 
   dplyr::filter(trait %in% target_traits)
 trait_vec = trait_df$efo_id; names(trait_vec) = trait_df$trait
+```
+
+## Read in associations files
+
+```{r}
+# Read in saved association files
+assoc_list = purrr::map(trait_vec, function(EFO_ID){
+  readRDS(file.path(target_dir,
+                    paste(EFO_ID, ".rds", sep = "")))
+})
+
+# Pull out association IDs
+assoc_ids = purrr::map(assoc_list, "associations") %>% 
+  purrr::map(unique("association_id"))
+```
+
+## Get studies
+
+NOTE: this takes time to run
+
+```{r, eval = F}
+studies = purrr::map(assoc_ids, function(ASSOC_IDS){
+  gwasrapidd::get_studies(association_id = ASSOC_IDS)
+})
+names(studies) = trait_vec
+
+# Save to file
+purrr::imap(studies, function(VALUE, NAME){
+  dir.create(studies_dir, showWarnings = F, recursive = T)
+  saveRDS(VALUE,
+          file.path(studies_dir,
+                    paste(NAME, ".rds", sep = "")))
+})
+```
+
+```{r}
+studies = purrr::map(trait_vec, function(EFO_ID){
+  readRDS(file.path(studies_dir,
+                    paste(EFO_ID, ".rds", sep = "")))
+})
+```
+
+## Pull out key data
+
+```{r}
+df = purrr::imap(studies, function(TRAIT, NAME){
+  # get study IDs
+  out = TRAIT@studies %>% 
+    dplyr::select(study_id) %>% 
+    dplyr::distinct() %>% 
+    # get ancestries - adds `ancestry_id`, `type` and `number_of_individuals` columns
+    dplyr::left_join(.,
+                     TRAIT@ancestries,
+                     by = "study_id") %>% 
+    # get ancestral_groups - adds `ancestral_group` column
+    dplyr::left_join(.,
+                     TRAIT@ancestral_groups,
+                     by = c("study_id", "ancestry_id")) %>% 
+    # get countries of recruitment - adds `country_name`, `major_area` and `region` columns
+    dplyr::left_join(.,
+                     TRAIT@countries_of_recruitment,
+                     by = c("study_id", "ancestry_id"))
+  # get trait
+  out$trait = NAME
+  
+  return(out)
+})
+
+# rename with EFO ids
+names(df) = trait_vec
+
+df = dplyr::bind_rows(df, .id = "efo_id") %>% 
+  dplyr::select(efo_id, trait, everything())
+
+# Show table
+DT::datatable(df)
+```
+
+## Get distinct regions
+
+```{r}
+df %>% 
+  dplyr::filter(ancestral_group == "Other") %>% 
+  DT::datatable()
+
+# recode Greater Middle Eastern (Middle Eastern, North African or Persian)
+df_filt = df %>% 
+  dplyr::mutate(ancestral_recode = dplyr::if_else(ancestral_group == "Greater Middle Eastern (Middle Eastern, North African or Persian)",
+                                                  "Greater Middle Eastern",
+                                                  ancestral_group))
+
+
+# read in palette
+pal_df = read_csv(pal_file)
+pal = pal_df$colour ; names(pal) = pal_df$ancestral_group
+```
+
+## Plot
+
+### Number of studies
+
+```{r}
+studies_plot = df_filt %>% 
+  # get distinct combinations of trait, study_id, and ancestral_group
+  dplyr::distinct(trait, study_id, ancestral_group) %>% 
+  # count number of different ancestral groups used in these studies
+  dplyr::count(trait, ancestral_group, name = "n_studies") %>% 
+  # order
+  dplyr::mutate(ancestral_group = factor(ancestral_group,
+                                         levels = names(pal))) %>% 
+  # add spaces
+  dplyr::mutate(trait = trait %>% 
+                  stringr::str_replace_all(" ", "\n")) %>% 
+  # order traits
+  dplyr::mutate(trait = factor(trait,
+                               levels = tt_newline)) %>% 
+  # plot
+  ggplot() +
+    geom_col(aes(trait, n_studies, fill = ancestral_group)) +
+    scale_fill_manual(values = pal) +
+    theme_cowplot(rel_small = 11/14) +
+    theme(legend.title = element_blank()) +
+    ylab("number of ancestral groups used in studies") +
+    ggtitle("Number of GWAS using different ancestral groups")
+
+ggsave(here::here("docs/plots/20220324_n_ancestral_groups.png"),
+       studies_plot,
+       device = "png",
+       width = 12.944,
+       height = 8,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20220324_n_ancestral_groups.pdf"),
+       studies_plot,
+       device = "pdf",
+       width = 12.944,
+       height = 8,
+       units = "in",
+       dpi= 400)
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20220324_n_ancestral_groups.png"))
+```
+
+
+### Number of individuals
+
+```{r}
+indivs_plot = df_filt %>% 
+  # get distinct combinations of trait, study_id, and ancestral_group
+  dplyr::distinct(trait, study_id, number_of_individuals, ancestral_group) %>% 
+  # get total number of individuals used for each ancestral group
+  dplyr::group_by(trait, ancestral_group) %>% 
+  dplyr::summarise(n_individuals = sum(number_of_individuals)) %>%
+  # order ancestral group
+  dplyr::mutate(ancestral_group = factor(ancestral_group,
+                                         levels = names(pal))) %>% 
+  # add spaces
+  dplyr::mutate(trait = trait %>% 
+                  stringr::str_replace_all(" ", "\n")) %>% 
+  # order traits
+  dplyr::mutate(trait = factor(trait,
+                               levels = tt_newline)) %>% 
+  # plot
+  ggplot() +
+    geom_col(aes(trait, n_individuals, fill = ancestral_group)) +
+    scale_fill_manual(values = pal) +
+    theme_cowplot(rel_small = 11/14) +
+    theme(legend.title = element_blank()) +
+    ylab("number of ancestral groups used in studies") +
+    ggtitle("Number of individuals from each ancestral group used in GWAS")
+
+ggsave(here::here("docs/plots/20220324_n_individuals.png"),
+       indivs_plot,
+       device = "png",
+       width = 12.944,
+       height = 8,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20220324_n_individuals.pdf"),
+       indivs_plot,
+       device = "pdf",
+       width = 12.944,
+       height = 8,
+       units = "in",
+       dpi= 400)
+
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20220324_n_individuals.png"))
 ```
 

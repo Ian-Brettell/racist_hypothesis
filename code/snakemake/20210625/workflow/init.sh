@@ -42,6 +42,7 @@ singularity build --remote \
 ssh proxy-codon
 module load singularity-3.7.0-gcc-9.3.0-dp5ffrp
 bsub -M 20000 -Is bash
+cd /hps/software/users/birney/ian/repos/human_traits_fst
 # New code:
 singularity shell --bind /hps/nobackup/birney/users/ian/rstudio_db:/var/lib/rstudio-server \
                   --bind /hps/nobackup/birney/users/ian/tmp:/tmp \
