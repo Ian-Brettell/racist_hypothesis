@@ -52,8 +52,11 @@ target_traits = c("body height",
                   "intelligence",
                   "skin pigmentation",
                   "skin pigmentation measurement",
-                  "hair shape measurement",
-                  "eye colour measurement")
+                  "hair shape measurement"
+                  ,"eye colour measurement"
+                  ,"HIV-1 infection"
+                  ,"viral load"
+                  )
 
 tt_newline = target_traits %>% 
   stringr::str_replace_all(pattern = " ",
@@ -182,7 +185,7 @@ studies_plot = df_filt %>%
   ggplot() +
     geom_col(aes(trait, n_studies, fill = ancestral_group)) +
     scale_fill_manual(values = pal) +
-    theme_cowplot(rel_small = 11/14) +
+    theme_cowplot(rel_small = 10/14) +
     theme(legend.title = element_blank()) +
     ylab("number of ancestral groups used in studies") +
     ggtitle("Number of GWAS using different ancestral groups")
@@ -231,7 +234,7 @@ indivs_plot = df_filt %>%
   ggplot() +
     geom_col(aes(trait, n_individuals, fill = ancestral_group)) +
     scale_fill_manual(values = pal) +
-    theme_cowplot(rel_small = 11/14) +
+    theme_cowplot(rel_small = 10/14) +
     theme(legend.title = element_blank()) +
     ylab("number of ancestral groups used in studies") +
     ggtitle("Number of individuals from each ancestral group used in GWAS")
@@ -256,5 +259,61 @@ ggsave(here::here("docs/plots/20220324_n_individuals.pdf"),
 
 ```{r}
 knitr::include_graphics(here::here("docs/plots/20220324_n_individuals.png"))
+```
+
+### Zoom in on traits with low sample sizes
+
+```{r}
+indivs_plot_lowss = df_filt %>% 
+  # filter for traits to keep 
+  dplyr::filter(trait %in% c( "skin pigmentation"
+                             ,"skin pigmentation measurement"
+                             ,"hair shape measurement"
+                             ,"eye colour measurement"
+                             ,"HIV-1 infection"
+                             ,"viral load"
+                             )) %>% 
+  # get distinct combinations of trait, study_id, and ancestral_group
+  dplyr::distinct(trait, study_id, number_of_individuals, ancestral_group) %>% 
+  # get total number of individuals used for each ancestral group
+  dplyr::group_by(trait, ancestral_group) %>% 
+  dplyr::summarise(n_individuals = sum(number_of_individuals)) %>%
+  # order ancestral group
+  dplyr::mutate(ancestral_group = factor(ancestral_group,
+                                         levels = names(pal))) %>% 
+  # add spaces
+  dplyr::mutate(trait = trait %>% 
+                  stringr::str_replace_all(" ", "\n")) %>% 
+  # order traits
+  dplyr::mutate(trait = factor(trait,
+                               levels = tt_newline)) %>% 
+  # plot
+  ggplot() +
+    geom_col(aes(trait, n_individuals, fill = ancestral_group)) +
+    scale_fill_manual(values = pal) +
+    theme_cowplot(rel_small = 11/14) +
+    theme(legend.title = element_blank()) +
+    ylab("number of ancestral groups used in studies") +
+    ggtitle("Number of individuals from each ancestral group used in GWAS")
+
+ggsave(here::here("docs/plots/20220324_n_individuals_low_ss.png"),
+       indivs_plot_lowss,
+       device = "png",
+       width = 12.944,
+       height = 8,
+       units = "in",
+       dpi= 400)
+
+ggsave(here::here("docs/plots/20220324_n_individuals_low_ss.pdf"),
+       indivs_plot_lowss,
+       device = "pdf",
+       width = 12.944,
+       height = 8,
+       units = "in",
+       dpi= 400)
+```
+
+```{r}
+knitr::include_graphics(here::here("docs/plots/20220324_n_individuals_low_ss.png"))
 ```
 
