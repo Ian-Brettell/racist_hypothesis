@@ -3,6 +3,7 @@ include: "rules/00_common.smk"
 include: "rules/01_1kgp.smk"
 include: "rules/02_assocs.smk"
 include: "rules/03_data_extraction.smk"
+include: "rules/04_send_figs.smk"
 
 rule all:
     input:
@@ -158,26 +159,29 @@ rule all:
 #            date = DATE_OF_COLLECTION,
 #            efo_id = EFO_IDS_FILT
 #        ),
-# get_fst_hits
-        expand(os.path.join(config["working_dir"], "gwasrapidd/{date}/pegas/fst/hits/{clump_r2_kb}/{efo_id}.rds"),
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_FILT,
-            clump_r2_kb = CLUMP_R2_KB
-        ),
-# get_fst_controls
-        expand(os.path.join(config["working_dir"], "gwasrapidd/{date}/pegas/fst/controls/{clump_r2_kb}/{efo_id}.rds"),    
-            date = DATE_OF_COLLECTION,
-            efo_id = EFO_IDS_FILT,
-            clump_r2_kb = CLUMP_R2_KB
-        ),
-# consolidate_fst_hits
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/{clump_r2_kb}/hits.rds"),
-            date = DATE_OF_COLLECTION,
-            clump_r2_kb = CLUMP_R2_KB
-        ),
-# consolidate_fst_controls
-        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/{clump_r2_kb}/controls.rds"),
-            date = DATE_OF_COLLECTION,
-            clump_r2_kb = CLUMP_R2_KB
-        ),
-
+## get_fst_hits
+#        expand(os.path.join(config["working_dir"], "gwasrapidd/{date}/pegas/fst/hits/{clump_r2_kb}/{efo_id}.rds"),
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT,
+#            clump_r2_kb = CLUMP_R2_KB
+#        ),
+## get_fst_controls
+#        expand(os.path.join(config["working_dir"], "gwasrapidd/{date}/pegas/fst/controls/{clump_r2_kb}/{efo_id}.rds"),    
+#            date = DATE_OF_COLLECTION,
+#            efo_id = EFO_IDS_FILT,
+#            clump_r2_kb = CLUMP_R2_KB
+#        ),
+## consolidate_fst_hits
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/{clump_r2_kb}/hits.rds"),
+#            date = DATE_OF_COLLECTION,
+#            clump_r2_kb = CLUMP_R2_KB
+#        ),
+## consolidate_fst_controls
+#        expand(os.path.join(config["lts_dir"], "gwasrapidd/{date}/pegas/fst/consol/{clump_r2_kb}/controls.rds"),
+#            date = DATE_OF_COLLECTION,
+#            clump_r2_kb = CLUMP_R2_KB
+#        ),
+################
+## 04_send_figs.smk
+################
+        rules.send_plots_to_google_drive.output,

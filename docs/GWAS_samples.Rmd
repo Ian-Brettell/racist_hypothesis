@@ -152,7 +152,7 @@ df %>%
 
 # recode Greater Middle Eastern (Middle Eastern, North African or Persian)
 df_filt = df %>% 
-  dplyr::mutate(ancestral_recode = dplyr::if_else(ancestral_group == "Greater Middle Eastern (Middle Eastern, North African or Persian)",
+  dplyr::mutate(ancestral_group = dplyr::if_else(ancestral_group == "Greater Middle Eastern (Middle Eastern, North African or Persian)",
                                                   "Greater Middle Eastern",
                                                   ancestral_group))
 
@@ -160,6 +160,9 @@ df_filt = df %>%
 # read in palette
 pal_df = read_csv(pal_file)
 pal = pal_df$colour ; names(pal) = pal_df$ancestral_group
+
+# make with new lines
+pal_nline = pal ; names(pal_nline) = stringr::str_replace_all(names(pal_nline), " ", "\n")
 ```
 
 # Plot
@@ -215,35 +218,52 @@ knitr::include_graphics(here::here("docs/plots/20220324_n_ancestral_groups.png")
 ## Number of individuals
 
 ```{r}
-indivs_plot = df_filt %>% 
+indivs_df = df_filt %>% 
   # get distinct combinations of trait, study_id, and ancestral_group
   dplyr::distinct(trait, study_id, number_of_individuals, ancestral_group) %>% 
   # get total number of individuals used for each ancestral group
   dplyr::group_by(trait, ancestral_group) %>% 
   dplyr::summarise(n_individuals = sum(number_of_individuals)) %>%
-  # order ancestral group
-  dplyr::mutate(ancestral_group = factor(ancestral_group,
-                                         levels = names(pal))) %>% 
+  dplyr::ungroup() %>% 
   # add spaces
   dplyr::mutate(trait = trait %>% 
                   stringr::str_replace_all(" ", "\n")) %>% 
+  dplyr::mutate(ancestral_group = ancestral_group %>% 
+                  stringr::str_replace_all(" ", "\n")) %>% 
+  ## recode Greater Middle Easter (Middle Eastern, North African or Persian)
+  #dplyr::mutate(ancestral_group = dplyr::if_else(ancestral_group == "Greater\nMiddle\nEastern\n(Middle\nEastern,\nNorth\nAfrican\nor\nPersian)",
+  #                                               "Greater\nMiddle\nEastern",
+  #                                               ancestral_group)) %>% 
+  # order ancestral group
+  dplyr::mutate(ancestral_group = factor(ancestral_group,
+                                         levels = names(pal_nline))) %>% 
   # order traits
   dplyr::mutate(trait = factor(trait,
-                               levels = tt_newline)) %>% 
-  # plot
+                               levels = tt_newline)) 
+
+indivs_plot = indivs_df %>% 
+  #dplyr::filter(trait == "viral\nload") %>% 
   ggplot() +
-    geom_col(aes(trait, n_individuals, fill = ancestral_group)) +
-    scale_fill_manual(values = pal) +
+    geom_col(aes(ancestral_group, n_individuals, fill = ancestral_group)) +
+    scale_fill_manual(values = pal_nline) +
+    facet_grid(rows = vars(trait)) +
     theme_cowplot(rel_small = 10/14) +
-    theme(legend.title = element_blank()) +
-    ylab("number of ancestral groups used in studies") +
-    ggtitle("Number of individuals from each ancestral group used in GWAS")
+    #theme(legend.title = element_blank()) +
+    guides(fill = "none") +
+    xlab("ancestral group") +
+    ylab(expression(number~of~individuals~included~"in"~studies~`(log`[10]~scale*`)`)) +
+    #ggtitle("Number of individuals from each ancestral group used in GWAS") +
+    #scale_y_log10()
+    #scale_y_continuous(trans = "log10")
+    scale_y_continuous(trans='log10',
+                       breaks=scales::trans_breaks('log10', function(x) 10^x),
+                       labels=scales::trans_format('log10', scales::math_format(10^.x)))
 
 ggsave(here::here("docs/plots/20220324_n_individuals.png"),
        indivs_plot,
        device = "png",
        width = 12.944,
-       height = 8,
+       height = 12,
        units = "in",
        dpi= 400)
 
@@ -251,7 +271,7 @@ ggsave(here::here("docs/plots/20220324_n_individuals.pdf"),
        indivs_plot,
        device = "pdf",
        width = 12.944,
-       height = 8,
+       height = 12,
        units = "in",
        dpi= 400)
 
@@ -314,6 +334,6 @@ ggsave(here::here("docs/plots/20220324_n_individuals_low_ss.pdf"),
 ```
 
 ```{r}
-knitr::include_graphics(here::here("docs/plots/20220324_n_individuals_low_ss.png"))
+knitr::include_graphics(here::here("docs/plots/20220324_n_individuals.png"))
 ```
 

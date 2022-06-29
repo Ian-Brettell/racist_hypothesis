@@ -670,7 +670,7 @@ final_figure = cowplot::ggdraw() +
 width = 12
 height = 12
 
-ggsave(here::here("docs/plots", clump_params, "20220314_final.png"),
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_final.png", sep = "")),
        final_figure,
        device = "png",
        width = width,
@@ -678,7 +678,7 @@ ggsave(here::here("docs/plots", clump_params, "20220314_final.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots", clump_params, "20220314_final.pdf"),
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_final.pdf", sep = "")),
        final_figure,
        device = "pdf",
        width = width,

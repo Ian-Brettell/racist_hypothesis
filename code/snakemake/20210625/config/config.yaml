@@ -9,6 +9,13 @@ log_dir:
     /hps/nobackup/birney/users/ian/hmn_fst/logs
 tmp_dir:
     /hps/nobackup/birney/users/ian/hmn_fst/tmp
+repo_dir:
+    /hps/software/users/birney/ian/repos/human_traits_fst
+google_drive_dir:
+    # NOTE: you need to set up this (or some other) drive with `rclone config` first
+    EBI_Google_Drive:thesis/figs/human_fst
+rclone_env:
+    /hps/software/users/birney/ian/repos/human_traits_fst/code/snakemake/20210625/workflow/envs/rclone.yaml
 #####################
 # Variables
 #####################

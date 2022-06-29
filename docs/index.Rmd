@@ -258,13 +258,13 @@ snp_count_plot = list("PRE-CLUMP" = raw_counts,
   dplyr::mutate(TRAIT = factor(TRAIT, levels = names(pal_all)),
                 FILTER = factor(FILTER, levels = c("PRE-CLUMP", "POST-CLUMP"))) %>% 
   ggplot() +
-    geom_col(aes(TRAIT, N, fill = TRAIT)) +
+    geom_col(aes(TRAIT, log10(N), fill = TRAIT)) +
     scale_fill_manual(values = pal_all) +
-    theme_bw() +
+    theme_cowplot() +
     theme(axis.text.x = element_blank(),
           axis.title.x = element_blank(),
           axis.ticks.x = element_blank()) +
-    ylab("N LOCI") +
+    ylab(expression(log[10]("number of loci"))) +
     facet_wrap(~FILTER, nrow = 2) +
     guides(fill = "none")
 
@@ -278,7 +278,7 @@ height = 10
 
 dir.create(here::here("docs/plots", clump_params), recursive = T, showWarnings = T)
 
-ggsave(here::here("docs/plots", clump_params, "20220314_snp_counts.png"),
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_snp_counts.png", sep = "")),
        plot = snp_count_plot,
        device = "png",
        width = width,
@@ -286,12 +286,20 @@ ggsave(here::here("docs/plots", clump_params, "20220314_snp_counts.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots", clump_params, "20220314_snp_counts.svg"),
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_snp_counts.svg", sep = "")),
        plot = snp_count_plot,
        device = "svg",
        width = width,
        height = height,
        units = "in")
+
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_snp_counts.pdf", sep = "")),
+       snp_count_plot,
+       device = "pdf",
+       width = width,
+       height = height,
+       units = "in",
+       dpi= 400)
 ```
 
 
@@ -488,6 +496,24 @@ ggsave(out_pdf,
        height = 28,
        units = "in",
        dpi = 400)
+
+# Make versions for thesis
+
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_ecdf_all_faceted_with_controls_d_rank_long.pdf", sep = "")),
+       plot = ecdf_plot_face_w_controls_d_rank, 
+       device = "pdf",
+       width = 38,
+       height = 28,
+       units = "in",
+       dpi = 400)
+       
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_ecdf_all_faceted_with_controls_d_rank_long.png", sep = "")),
+       plot = ecdf_plot_face_w_controls_d_rank, 
+       device = "png",
+       width = 38,
+       height = 28,
+       units = "in",
+       dpi = 400)       
 ```
 
 
@@ -670,7 +696,7 @@ final_figure = cowplot::ggdraw() +
 width = 12
 height = 12
 
-ggsave(here::here("docs/plots", clump_params, "20220314_final.png"),
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_final.png", sep = "")),
        final_figure,
        device = "png",
        width = width,
@@ -678,7 +704,7 @@ ggsave(here::here("docs/plots", clump_params, "20220314_final.png"),
        units = "in",
        dpi= 400)
 
-ggsave(here::here("docs/plots", clump_params, "20220314_final.pdf"),
+ggsave(here::here("docs/plots", clump_params, paste(clump_params, "_20220314_final.pdf", sep = "")),
        final_figure,
        device = "pdf",
        width = width,
